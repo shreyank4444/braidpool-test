@@ -1,15 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  Card,
-  Typography,
-  CircularProgress,
-  Tooltip,
-  useTheme,
-} from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TrendingUp, TrendingDown, Info, Loader2 } from 'lucide-react';
 
 interface KPICardProps {
   title: string;
@@ -19,7 +10,7 @@ interface KPICardProps {
   subtitle?: string;
   loading?: boolean;
   info?: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode; // Kept as per instruction
 }
 
 const KPICard: React.FC<KPICardProps> = ({
@@ -30,129 +21,68 @@ const KPICard: React.FC<KPICardProps> = ({
   subtitle,
   loading = false,
   info,
-  icon,
+  // icon, // icon prop is not used in the new structure
 }) => {
-  const theme = useTheme();
-
   const renderTrend = () => {
     if (change === undefined) return null;
-
     const isPositive = change >= 0;
-    const color = isPositive
-      ? theme.palette.success.main
-      : theme.palette.error.main;
-    const Icon = isPositive ? TrendingUpIcon : TrendingDownIcon;
+    // Using text-green-600 and text-red-600 as direct Tailwind classes
+    const trendColorClass = isPositive ? 'text-green-600' : 'text-red-600';
+    const Icon = isPositive ? TrendingUp : TrendingDown;
 
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', color, mt: 0.5 }}>
-        <Icon fontSize="small" sx={{ mr: 0.5 }} />
-        <Typography variant="body2" component="span" sx={{ color }}>
+      <div className={`flex items-center mt-0.5 ${trendColorClass}`}>
+        <Icon className="h-4 w-4 mr-1" />
+        <span className="text-xs font-medium">
           {Math.abs(change)}% {isPositive ? 'increase' : 'decrease'}
-        </Typography>
-      </Box>
+        </span>
+      </div>
     );
   };
 
   return (
-    <Card
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        minHeight: 90,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        borderRadius: 1,
-        border: '1px solid rgba(0,0,0,0.05)',
-        backgroundColor: '#fff',
-      }}
-    >
-      {/* Subtitle first (if provided) - matches FOREMAN layout */}
+    <div className="bg-card text-foreground p-4 flex flex-col h-full min-h-[120px] shadow-sm rounded-lg border border-border relative">
+      {/* Subtitle first (if provided) */}
       {subtitle && (
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            fontSize: '0.7rem',
-            textTransform: 'uppercase',
-            textAlign: 'center',
-            mb: 0.5,
-          }}
-        >
-          {subtitle}
-        </Typography>
+        <p className="text-xs text-muted-foreground uppercase text-center mb-1">{subtitle}</p>
       )}
 
       {/* Value section with large font */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-          mb: 0.5,
-        }}
-      >
+      <div className="flex flex-col justify-center items-center mb-1 flex-grow">
         {loading ? (
-          <CircularProgress size={24} sx={{ my: 1 }} />
+          <Loader2 className="h-8 w-8 text-primary animate-spin my-1" />
         ) : (
-          <>
-            <Typography
-              variant="h5"
-              component="div"
-              fontWeight="bold"
-              sx={{ textAlign: 'center' }}
-            >
-              {value}
-            </Typography>
+          <div className="flex items-end justify-center">
+            <p className="text-3xl font-bold text-center text-foreground leading-none">{value}</p>
             {unit && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ ml: 0.5, mb: 0.2 }}
-              >
-                {unit}
-              </Typography>
+              <span className="text-sm text-muted-foreground ml-1 mb-0.5 self-end">{unit}</span>
             )}
-          </>
+          </div>
         )}
-      </Box>
+      </div>
 
-      {/* Title below the value - matches FOREMAN layout */}
-      <Typography
-        variant="subtitle2"
-        color="text.secondary"
-        sx={{
-          textAlign: 'center',
-          fontSize: '0.75rem',
-          fontWeight: 'normal',
-          color: '#666',
-        }}
-      >
-        {title}
-      </Typography>
+      {/* Title below the value */}
+      <p className="text-center text-xs font-normal text-muted-foreground mt-1">{title}</p>
 
       {/* Trend indicator at bottom */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 'auto' }}>
+      <div className="flex justify-center items-center mt-auto pt-1 h-6">
         {renderTrend()}
-      </Box>
+      </div>
 
       {/* Info icon if needed */}
       {info && (
-        <Tooltip title={info} arrow placement="top">
-          <InfoOutlinedIcon
-            fontSize="small"
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              color: 'text.secondary',
-              cursor: 'help',
-              opacity: 0.6,
-            }}
-          />
-        </Tooltip>
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 absolute top-2 right-2 text-muted-foreground cursor-help opacity-70 hover:opacity-100" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{info}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
-    </Card>
+    </div>
   );
 };
 

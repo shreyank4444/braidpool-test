@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import { AppBar, Box, Toolbar, Typography, Button } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import SettingsIcon from '@mui/icons-material/Settings';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import HomeIcon from '@mui/icons-material/Home';
+import { Button } from '@/components/ui/button'; // Assuming default path
+import { Menu, Settings, Bell, Filter, Home } from 'lucide-react';
 import ActionIconButton from './ActionIconButton';
-import colors from '../../theme/colors';
 
 interface HeaderProps {
   title?: string;
@@ -22,58 +17,11 @@ const Header: React.FC<HeaderProps> = ({ title = 'BRAIDPOOL' }) => {
   };
 
   return (
-    <AppBar
-      position="fixed"
-      elevation={0}
-      sx={{
-        backgroundColor: '#1a1a1a',
-        boxShadow: `0 2px 4px rgba(0,0,0,0.3)`,
-        height: 56,
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-      }}
-    >
-      <Toolbar
-        sx={{
-          minHeight: 56,
-          height: 56,
-          px: { xs: 2, sm: 3 },
-          py: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'relative',
-        }}
-      >
+    <header className="fixed top-0 left-0 right-0 w-full bg-card text-foreground border-b border-border shadow-md h-14 z-50">
+      <div className="h-full px-4 sm:px-6 flex items-center justify-between relative">
         {/* Left side - Logo and Brand */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            height: '100%',
-            my: 'auto',
-          }}
-        >
-          <Box
-            component="div"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: colors.textLight,
-
-              borderRadius: '50%',
-              width: 36,
-              height: 36,
-              mr: 2,
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-              flexShrink: 0,
-              transform: 'translateY(-1px)',
-              overflow: 'hidden', // Ensure image doesn't overflow the circle
-            }}
-          >
+        <div className="flex items-center h-full">
+          <div className="flex items-center justify-center text-foreground rounded-full w-9 h-9 mr-2 shadow-sm flex-shrink-0 overflow-hidden">
             <img
               src="/favicon.ico" // Update this path to your actual icon path
               alt="favicon"
@@ -83,132 +31,38 @@ const Header: React.FC<HeaderProps> = ({ title = 'BRAIDPOOL' }) => {
                 objectFit: 'cover', // Adjust image fit
               }}
             />
-          </Box>
+          </div>
 
-          <Typography
-            variant="body1"
-            component="div"
-            sx={{
-              fontWeight: 'bold',
-              color: colors.textLight,
-              letterSpacing: '0.5px',
-              fontSize: '1.1rem',
-              lineHeight: 1,
-              mr: 2,
-              whiteSpace: 'nowrap',
-              transform: 'translateY(-1px)', // Subtle adjustment to visually center
-            }}
-          >
+          <span className="font-bold text-foreground tracking-wide text-lg mr-2 whitespace-nowrap">
             BRAIDPOOL
-          </Typography>
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              borderLeft: '1px solid rgba(255,255,255,0.2)',
-              height: 28,
-              mx: 2,
-              transform: 'translateY(-1px)', // Subtle adjustment to visually center
-            }}
-          />
-          <Box
-            component="span"
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              color: colors.textLight,
-              fontSize: '0.9rem',
-              fontWeight: 500,
-              ml: 0.5,
-              transform: 'translateY(-1px)', // Subtle adjustment to visually center
-            }}
-          >
-            <MenuIcon sx={{ fontSize: '1.2rem', mr: 1 }} />
-          </Box>
-        </Box>
+          </span>
+          <div className="hidden md:flex border-l border-border/50 h-7 mx-2" />
+          <div className="hidden md:flex items-center text-foreground">
+            <Menu className="h-5 w-5 mr-1" />
+          </div>
+        </div>
 
         {/* Right side - Actions */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            height: '100%',
-            transform: 'translateY(-1px)', // Subtle adjustment to visually center
-          }}
-        >
-          <Button
-            variant="contained"
-            size="small"
-            onClick={handleAddMiner}
-            sx={{
-              textTransform: 'none',
-              px: { xs: 1.5, sm: 2 },
-              py: 0.75,
-              height: 34,
-              backgroundColor: '#36454F',
-              color: 'white',
-              fontWeight: 500,
-              fontSize: '0.875rem',
-              borderRadius: 1.5,
-              minWidth: 'auto',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-              '&:hover': {
-                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              },
-            }}
-          >
+        <div className="flex items-center h-full space-x-3">
+          <Button variant="secondary" size="sm" onClick={handleAddMiner}>
             Add Miner
           </Button>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              height: '100%',
-            }}
-          >
-            <ActionIconButton icon={<HomeIcon sx={{ fontSize: '1.2rem' }} />} />
-
-            <ActionIconButton
-              icon={<FilterListIcon sx={{ fontSize: '1.2rem' }} />}
-            />
-
-            <Box sx={{ position: 'relative' }}>
-              <ActionIconButton
-                icon={<NotificationsIcon sx={{ fontSize: '1.2rem' }} />}
-              />
+          <div className="flex items-center space-x-1 h-full">
+            <ActionIconButton icon={<Home className="h-5 w-5" />} />
+            <ActionIconButton icon={<Filter className="h-5 w-5" />} />
+            <div className="relative">
+              <ActionIconButton icon={<Bell className="h-5 w-5" />} />
               {notificationCount > 0 && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -2,
-                    right: -2,
-                    bgcolor: colors.notification,
-                    color: colors.textLight,
-                    borderRadius: '50%',
-                    width: 16,
-                    height: 16,
-                    fontSize: 10,
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1.5px solid #1a1a1a',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                  }}
-                >
+                <div className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground rounded-full w-4 h-4 text-xs font-bold flex items-center justify-center border-2 border-card shadow-sm">
                   {notificationCount}
-                </Box>
+                </div>
               )}
-            </Box>
-
-            <ActionIconButton
-              icon={<SettingsIcon sx={{ fontSize: '1.2rem' }} />}
-            />
-          </Box>
-        </Box>
-      </Toolbar>
-    </AppBar>
+            </div>
+            <ActionIconButton icon={<Settings className="h-5 w-5" />} />
+          </div>
+        </div>
+      </div>
+    </header>
   );
 };
 

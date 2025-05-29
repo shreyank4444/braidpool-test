@@ -1,306 +1,140 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Button,
-} from '@mui/material';
-import Card from '../common/Card';
-import colors from '../../theme/colors';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import CodeIcon from '@mui/icons-material/Code';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import TerminalIcon from '@mui/icons-material/Terminal';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { PlayCircle, Code2, CloudDownload, Terminal, ArrowRight } from 'lucide-react';
+import Card from '../common/Card'; // Assuming Card is already refactored
 
 const InstallationInstructions = () => {
   return (
     <Card
       title="Installation Instructions"
       subtitle="How to install and set up Braidpool"
-      accentColor={colors.cardAccentPrimary}
+      accentColor="var(--primary)" // Updated accentColor
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 3,
-        }}
-      >
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
-          <Paper
-            elevation={0}
-            sx={{
-              backgroundColor: colors.paper,
-              borderRadius: 1,
-              border: `1px solid ${colors.primary}20`,
-              p: 2,
-              height: '100%',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex-1 w-full">
+          <div className="bg-card text-foreground rounded-lg border border-primary/20 p-4 h-full">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
               Basic Installation
-            </Typography>
+            </h3>
 
-            <Typography variant="body2" sx={{ mb: 3 }}>
+            <p className="text-sm text-muted-foreground mb-6">
               Follow these steps to install and run Braidpool node on your
               system. Make sure you have the prerequisites installed before
               proceeding.
-            </Typography>
+            </p>
 
-            <List sx={{ pl: 0 }}>
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <CloudDownloadIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Clone the repository"
-                  secondary="git clone https://github.com/braidpool/braidpool.git"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                />
-              </ListItem>
+            <ul className="space-y-4">
+              <li className="flex items-start space-x-3">
+                <CloudDownload className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Clone the repository</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    git clone https://github.com/braidpool/braidpool.git
+                  </p>
+                </div>
+              </li>
 
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <TerminalIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Build the node"
-                  secondary="cd node && cargo build"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                />
-              </ListItem>
+              <li className="flex items-start space-x-3">
+                <Terminal className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Build the node</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    cd node && cargo build
+                  </p>
+                </div>
+              </li>
 
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <PlayCircleOutlineIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Run the first seed node"
-                  secondary="cargo run -- --bind=localhost:8989 --bitcoin=0.0.0.0 --rpcport=8332 --rpcuser=xxxx --rpcpass=yyyy --zmqhashblockport=28332"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                      overflowX: 'auto',
-                    },
-                  }}
-                />
-              </ListItem>
-            </List>
+              <li className="flex items-start space-x-3">
+                <PlayCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Run the first seed node</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    cargo run -- --bind=localhost:8989 --bitcoin=0.0.0.0 --rpcport=8332 --rpcuser=xxxx --rpcpass=yyyy --zmqhashblockport=28332
+                  </p>
+                </div>
+              </li>
+            </ul>
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<CodeIcon />}
-                sx={{ textTransform: 'none' }}
-                onClick={() => console.log('📝 Opening full documentation...')}
-              >
-                View Full Documentation
+            <div className="mt-6 flex justify-center">
+              <Button variant="default" size="sm" onClick={() => console.log('📝 Opening full documentation...')}>
+                <Code2 className="mr-2 h-4 w-4" /> View Full Documentation
               </Button>
-            </Box>
-          </Paper>
-        </Box>
+            </div>
+          </div>
+        </div>
 
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
-          <Paper
-            elevation={0}
-            sx={{
-              backgroundColor: colors.paper,
-              borderRadius: 1,
-              border: `1px solid ${colors.primary}20`,
-              p: 2,
-              height: '100%',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+        <div className="flex-1 w-full">
+          <div className="bg-card text-foreground rounded-lg border border-primary/20 p-4 h-full">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
               CPUnet Testing Node
-            </Typography>
+            </h3>
 
-            <Typography variant="body2" sx={{ mb: 3 }}>
+            <p className="text-sm text-muted-foreground mb-6">
               For testing purposes, you can set up the CPUnet testing node using
               nix-script from the root directory.
-            </Typography>
+            </p>
 
-            <List sx={{ pl: 0 }}>
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <TerminalIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Build the nix-script"
-                  secondary="nix-build cpunet_node.nix"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                />
-              </ListItem>
+            <ul className="space-y-4">
+              <li className="flex items-start space-x-3">
+                <Terminal className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Build the nix-script</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    nix-build cpunet_node.nix
+                  </p>
+                </div>
+              </li>
 
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <ArrowForwardIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Navigate to result directory"
-                  secondary="cd result"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                />
-              </ListItem>
+              <li className="flex items-start space-x-3">
+                <ArrowRight className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Navigate to result directory</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    cd result
+                  </p>
+                </div>
+              </li>
 
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <PlayCircleOutlineIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Run the CPUnet node"
-                  secondary="./bin/bitcoind -cpunet -zmqpubsequence=tcp://127.0.0.1:28338"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                />
-              </ListItem>
+              <li className="flex items-start space-x-3">
+                <PlayCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Run the CPUnet node</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    ./bin/bitcoind -cpunet -zmqpubsequence=tcp://127.0.0.1:28338
+                  </p>
+                </div>
+              </li>
 
-              <ListItem sx={{ px: 0, py: 1 }}>
-                <ListItemIcon sx={{ minWidth: 36, color: colors.primary }}>
-                  <TerminalIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Generate blocks"
-                  secondary="./contrib/cpunet/miner --cli=./bin/bitcoin-cli --ongoing --address `./bin/bitcoin-cli -cpunet getnewaddress` --grind-cmd='./bin/bitcoin-util -cpunet -ntasks=1 grind'"
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    color: colors.textPrimary,
-                  }}
-                  secondaryTypographyProps={{
-                    fontSize: '0.8rem',
-                    color: colors.textSecondary,
-                    sx: {
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      padding: '4px 8px',
-                      mt: 0.5,
-                      borderRadius: 1,
-                      fontFamily: 'monospace',
-                      overflowX: 'auto',
-                    },
-                  }}
-                />
-              </ListItem>
-            </List>
+              <li className="flex items-start space-x-3">
+                <Terminal className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Generate blocks</p>
+                  <p className="text-xs text-muted-foreground font-mono bg-muted/20 p-2 mt-1 rounded-md overflow-x-auto">
+                    ./contrib/cpunet/miner --cli=./bin/bitcoin-cli --ongoing --address `./bin/bitcoin-cli -cpunet getnewaddress` --grind-cmd='./bin/bitcoin-util -cpunet -ntasks=1 grind'
+                  </p>
+                </div>
+              </li>
+            </ul>
 
-            <Divider sx={{ my: 2 }} />
+            <Separator className="my-6" />
 
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-              Prerequisites
-            </Typography>
+            <h4 className="text-lg font-medium text-foreground mb-2">Prerequisites</h4>
 
-            <List dense>
-              <ListItem sx={{ px: 0, py: 0.5 }}>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                  • Rust toolchain (rustc, cargo)
-                </Typography>
-              </ListItem>
-              <ListItem sx={{ px: 0, py: 0.5 }}>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                  • Nix package manager (for CPUnet)
-                </Typography>
-              </ListItem>
-              <ListItem sx={{ px: 0, py: 0.5 }}>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                  • Bitcoin Core (for RPC and ZMQ access)
-                </Typography>
-              </ListItem>
-            </List>
-          </Paper>
-        </Box>
-      </Box>
+            <ul className="space-y-1 list-disc list-inside pl-1">
+              <li className="text-sm text-muted-foreground">
+                Rust toolchain (rustc, cargo)
+              </li>
+              <li className="text-sm text-muted-foreground">
+                Nix package manager (for CPUnet)
+              </li>
+              <li className="text-sm text-muted-foreground">
+                Bitcoin Core (for RPC and ZMQ access)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </Card>
   );
 };

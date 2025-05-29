@@ -1,14 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Box,
-  Typography,
-  useTheme,
-  CircularProgress,
-  Alert,
-} from '@mui/material';
 import * as d3 from 'd3';
-import colors from '../../theme/colors';
-import Card from '../common/Card';
+import { Loader2, InfoIcon as Info } from 'lucide-react';
+import Card from '../common/Card'; // Assuming Card is already refactored
 
 // Mock data for the hashrate over time
 const mockHashrateData = [
@@ -34,31 +27,31 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
   loading = false,
 }) => {
   const chartRef = useRef<SVGSVGElement>(null);
-  const theme = useTheme();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!chartRef.current) return;
 
-    // Clear previous error state
-    setError(null);
+    const getCssVariable = (variableName: string) => {
+      if (typeof window !== 'undefined') {
+        return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      }
+      return ''; // Fallback for SSR or non-browser environments if any
+    };
 
-    // Check if data is empty or invalid
+    setError(null);
     if (!data || data.length === 0) {
       setError('No hashrate data available');
       return;
     }
 
     try {
-      // Clear previous content
       d3.select(chartRef.current).selectAll('*').remove();
 
-      // Set up dimensions and margins
       const margin = { top: 30, right: 30, bottom: 50, left: 60 };
       const width = chartRef.current.clientWidth - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
 
-      // Create SVG
       const svg = d3
         .select(chartRef.current)
         .attr('width', width + margin.left + margin.right)
@@ -66,7 +59,6 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // Set up scales
       const x = d3
         .scaleBand()
         .domain(data.map((d) => d.time))
@@ -75,19 +67,17 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
 
       const y = d3
         .scaleLinear()
-        .domain([0, 100]) // Fixed y-axis from 0 to 100
+        .domain([0, 100])
         .range([chartHeight, 0]);
 
-      // Add the X axis
       svg
         .append('g')
         .attr('transform', `translate(0,${chartHeight})`)
         .call(d3.axisBottom(x))
         .selectAll('text')
-        .style('fill', colors.textSecondary)
+        .style('fill', getCssVariable('--muted-foreground') || '#b0b0b0')
         .style('font-size', '12px');
 
-      // Add the Y axis
       svg
         .append('g')
         .call(
@@ -97,10 +87,9 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
             .tickFormat((d) => `${d}`)
         )
         .selectAll('text')
-        .style('fill', colors.textSecondary)
+        .style('fill', getCssVariable('--muted-foreground') || '#b0b0b0')
         .style('font-size', '12px');
 
-      // Add grid lines
       svg
         .append('g')
         .attr('class', 'grid')
@@ -112,26 +101,23 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
         .attr('x2', width)
         .attr('y1', (d) => y(d))
         .attr('y2', (d) => y(d))
-        .attr('stroke', colors.chartGrid)
+        .attr('stroke', getCssVariable('--border') || '#424242')
         .attr('stroke-dasharray', '3,3');
 
-      // Create line generator
       const line = d3
         .line<{ time: string; value: number }>()
         .x((d) => x(d.time)! + x.bandwidth() / 2)
         .y((d) => y(d.value))
         .curve(d3.curveMonotoneX);
 
-      // Add the line path
       svg
         .append('path')
         .datum(data)
         .attr('fill', 'none')
-        .attr('stroke', colors.chartLine)
+        .attr('stroke', getCssVariable('--primary') || '#3986e8')
         .attr('stroke-width', 2.5)
         .attr('d', line);
 
-      // Add data points
       svg
         .selectAll('.dot')
         .data(data)
@@ -141,30 +127,27 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
         .attr('cx', (d) => x(d.time)! + x.bandwidth() / 2)
         .attr('cy', (d) => y(d.value))
         .attr('r', 4)
-        .attr('fill', colors.chartLine)
-        .attr('stroke', colors.chartBackground)
+        .attr('fill', getCssVariable('--primary') || '#3986e8')
+        .attr('stroke', getCssVariable('--card') || '#1e1e1e')
         .attr('stroke-width', 2);
 
-      // Add y-axis label
       svg
         .append('text')
         .attr('transform', 'rotate(-90)')
         .attr('y', -margin.left + 15)
         .attr('x', -chartHeight / 2)
         .attr('text-anchor', 'middle')
-        .style('fill', colors.textSecondary)
+        .style('fill', getCssVariable('--muted-foreground') || '#b0b0b0')
         .text('PH/s');
 
-      // Add x-axis label
       svg
         .append('text')
         .attr('y', chartHeight + margin.bottom - 10)
         .attr('x', width / 2)
         .attr('text-anchor', 'middle')
-        .style('fill', colors.textSecondary)
+        .style('fill', getCssVariable('--muted-foreground') || '#b0b0b0')
         .text('Time');
 
-      // Print debug info
       console.log(
         '🔄 Pool hashrate chart rendered with',
         data.length,
@@ -174,60 +157,27 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
       console.error('❌ Error rendering hashrate chart:', err);
       setError('Error rendering hashrate chart');
     }
-  }, [height, data]);
+  }, [height, data]); // Removed theme from dependencies
 
-  // Render placeholders for loading or error states
   const renderContent = () => {
     if (loading) {
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            flexDirection: 'column',
-            p: 3,
-          }}
-        >
-          <CircularProgress size={40} sx={{ mb: 2 }} />
-          <Typography variant="body2" color="textSecondary">
-            Loading hashrate data...
-          </Typography>
-        </Box>
+        <div className="flex flex-col justify-center items-center h-full p-6 text-foreground">
+          <Loader2 className="h-10 w-10 text-primary animate-spin mb-3" />
+          <p className="text-sm text-muted-foreground">Loading hashrate data...</p>
+        </div>
       );
     }
 
     if (error) {
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            p: 3,
-          }}
-        >
-          <Alert
-            severity="info"
-            sx={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(30, 73, 118, 0.1)',
-              '& .MuiAlert-icon': {
-                color: colors.primary,
-              },
-            }}
-          >
-            {error}
-            <Box component="span" sx={{ ml: 1 }}>
-              — Check your connection or try again later
-            </Box>
-          </Alert>
-        </Box>
+        <div className="flex flex-col justify-center items-center h-full p-6">
+          <div className="w-full flex flex-col items-center justify-center bg-destructive/10 border border-destructive/30 text-destructive p-4 rounded-md text-center">
+            <Info className="h-8 w-8 mb-2" />
+            <p className="text-sm font-medium">{error}</p>
+            <p className="text-xs mt-1 text-destructive/80">— Check your connection or try again later</p>
+          </div>
+        </div>
       );
     }
 
@@ -238,17 +188,11 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
     <Card
       title="Pool Hashrate"
       subtitle="Live network performance over time"
-      accentColor={colors.cardAccentPrimary}
+      accentColor="var(--primary)" // Updated accentColor
     >
-      <Box
-        sx={{
-          width: '100%',
-          height: height,
-          overflow: 'hidden',
-        }}
-      >
+      <div className="w-full overflow-hidden" style={{ height: height }}>
         {renderContent()}
-      </Box>
+      </div>
     </Card>
   );
 };

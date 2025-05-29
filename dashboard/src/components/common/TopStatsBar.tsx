@@ -1,6 +1,5 @@
 import React from 'react';
-import { Box, Typography, Stack, Skeleton } from '@mui/material';
-import colors from '../../theme/colors';
+import { Skeleton } from '@/components/ui/skeleton'; // Assuming default shadcn/ui path
 
 interface StatCardProps {
   title: string;
@@ -20,71 +19,43 @@ const StatCard: React.FC<StatCardProps> = ({
   loading = false,
 }) => {
   return (
-    <Box
-      sx={{
-        backgroundColor: colors.paper,
-        borderRadius: 1,
-        padding: 2,
-        height: '100%',
-        border: `1px solid ${colors.border}`,
-        transition: 'transform 0.2s',
-        '&:hover': {
-          transform: 'translateY(-3px)',
-          boxShadow: `0 8px 16px -8px ${colors.shadow}`,
-        },
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        {icon && <Box sx={{ mr: 1, color: colors.primary }}>{icon}</Box>}
-        <Typography variant="subtitle2" color="textSecondary">
-          {title}
-        </Typography>
-      </Box>
+    <div className="bg-card text-foreground p-4 rounded-lg border border-border h-full transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+      <div className="flex items-center mb-1">
+        {icon && <div className="mr-2 text-primary">{icon}</div>}
+        <p className="text-sm text-muted-foreground">{title}</p>
+      </div>
       {loading ? (
-        <Skeleton variant="text" width="80%" height={40} />
+        <Skeleton className="h-10 w-4/5 rounded" />
       ) : (
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            color: colors.textPrimary,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {value}
-        </Typography>
+        <p className="text-2xl font-bold text-foreground truncate">{value}</p>
       )}
-    </Box>
+    </div>
   );
 };
 
 const TopStatsBar: React.FC<TopStatsBarProps> = ({ loading = false }) => {
   return (
-    <Box sx={{ mb: 3 }}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={3}
-        sx={{ width: '100%' }}
-      >
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
+    <div className="mb-6">
+      <div className="flex flex-col sm:flex-row gap-6 w-full">
+        <div className="w-full sm:w-1/4">
           <StatCard
             title="Shares Submitted"
             value="208,450"
             loading={loading}
+            // icon={<SomeIcon />} // Example if an icon was to be passed
           />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
+        </div>
+        <div className="w-full sm:w-1/4">
           <StatCard title="Stale Shares" value="756" loading={loading} />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
+        </div>
+        <div className="w-full sm:w-1/4">
           <StatCard title="Pool Hashrate" value="98.3 PH/s" loading={loading} />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
+        </div>
+        <div className="w-full sm:w-1/4">
           <StatCard title="Recent Blocks Won" value="34" loading={loading} />
-        </Box>
-      </Stack>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 
