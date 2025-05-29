@@ -1,122 +1,54 @@
-import React, { useState } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { Box, Container, Link, Typography, Button } from '@mui/material';
+import React from 'react'; // Removed useState as it's no longer used
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard/Dashboard';
-import ShareDetails from './components/ShareDetails/ShareDetails';
+// import ShareDetails from './components/ShareDetails/ShareDetails'; // Was commented out
 import MinedSharesExplorer from './components/MinerDashboard/MinedSharesExplorer';
-
-// Create a dark theme
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#3986e8',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e',
-    },
-  },
-  components: {
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          paddingLeft: 16,
-          paddingRight: 16,
-          '@media (min-width: 600px)': {
-            paddingLeft: 24,
-            paddingRight: 24,
-          },
-        },
-      },
-    },
-  },
-});
+import './App.css'; // Keep if App.css has other relevant styles
 
 function Copyright() {
   return (
-    <Typography variant="body2" color="text.secondary" align="center">
+    <p className="text-sm text-muted-foreground text-center">
       {'© '}
-      <Link color="inherit" href="https://github.com/braidpool/braidpool">
+      <a
+        href="https://github.com/braidpool/braidpool"
+        className="text-primary hover:underline" // Assuming text-primary is desired for links
+      >
         Braidpool
-      </Link>{' '}
+      </a>{' '}
       {new Date().getFullYear()}
       {' - Built with Vite 🚀'}
-    </Typography>
+    </p>
   );
 }
 
 function App() {
-  const [shareDetailsOpen, setShareDetailsOpen] = useState(false);
+  // const [shareDetailsOpen, setShareDetailsOpen] = useState(false); // Remove if not used
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Box sx={{ display: 'flex' }}>
-          {/* Test button for ShareDetails */}
-          {/* <Button
-            variant='contained'
-            color='primary'
-            onClick={() => setShareDetailsOpen(true)}
-            sx={{
-              position: 'fixed',
-              top: '20px',
-              right: '20px',
-              zIndex: 9999,
-            }}>
-            Test Share Details
-          </Button> */}
-
-          {/* ShareDetails component */}
-          {/* <ShareDetails
-            open={shareDetailsOpen}
-            onClose={() => setShareDetailsOpen(false)}
-          /> */}
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: '100vh',
-              backgroundColor: '#121212',
-              width: '100%',
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route
-                path="/minedsharesexplorer"
-                element={<MinedSharesExplorer />}
-              />
-              {/* Add more routes as needed */}
-            </Routes>
-            <Box
-              component="footer"
-              sx={{
-                py: 3,
-                mt: 'auto',
-                bgcolor: 'background.paper',
-                borderTop: '1px solid rgba(255,255,255,0.05)',
-              }}
-            >
-              <Container maxWidth="lg">
-                <Typography variant="body1" align="center" gutterBottom>
-                  A visualization dashboard for the Braidpool decentralized
-                  mining pool
-                </Typography>
-                <Copyright />
-              </Container>
-            </Box>
-          </Box>
-        </Box>
-      </BrowserRouter>
-    </ThemeProvider>
+    <BrowserRouter>
+      <div className="flex"> {/* Original outer Box */}
+        {/* Commented out Button and ShareDetails were here - removed */}
+        <div className="flex flex-col min-h-screen bg-background text-foreground w-full"> {/* Original main content Box */}
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route
+              path="/minedsharesexplorer"
+              element={<MinedSharesExplorer />}
+            />
+            {/* Add more routes as needed */}
+          </Routes>
+          <footer className="py-6 mt-auto bg-card border-t border-white/5"> {/* Original footer Box */}
+            <div className="max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8"> {/* Original Container */}
+              <p className="text-base text-center mb-2">
+                A visualization dashboard for the Braidpool decentralized
+                mining pool
+              </p>
+              <Copyright />
+            </div>
+          </footer>
+        </div>
+      </div>
+    </BrowserRouter>
   );
 }
 
