@@ -3,8 +3,8 @@ import { BEADS } from '../lib/constants';
 import { ChevronDown, Calendar, Search } from 'lucide-react';
 
 interface FilterPanelProps {
-  startRef: React.RefObject<HTMLInputElement>;
-  endRef: React.RefObject<HTMLInputElement>;
+  startRef: React.RefObject<HTMLInputElement | null>;
+  endRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export default function FilterPanel({ startRef, endRef }: FilterPanelProps) {

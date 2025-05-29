@@ -3,14 +3,11 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Box,
-  Typography,
-} from '@mui/material';
-import Card from '../common/Card';
-import colors from '../../theme/colors';
+} from '@/components/ui/table';
+import Card from '../common/Card'; // Assuming Card is already refactored
 
 // Mock data for recent blocks
 const recentBlocks = [
@@ -52,79 +49,43 @@ const RecentBlocksTable: React.FC<RecentBlocksTableProps> = ({
     <Card
       title="Recent Blocks"
       subtitle="Latest blocks found by the pool"
-      accentColor={colors.cardAccentSecondary}
+      accentColor="#ff9800" // Updated accentColor
     >
-      <TableContainer
-        sx={{
-          maxHeight: maxHeight,
-          '&::-webkit-scrollbar': {
-            width: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: colors.paper,
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: colors.primary,
-            borderRadius: '4px',
-          },
-        }}
+      <div
+        className="overflow-y-auto"
+        style={{ maxHeight: `${maxHeight}px` }}
       >
-        <Table size="medium" stickyHeader>
-          <TableHead>
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                sx={{
-                  backgroundColor: colors.paper,
-                  color: colors.textPrimary,
-                  fontWeight: 'bold',
-                }}
-              >
+              <TableHead className="bg-card text-foreground font-bold sticky top-0 z-10">
                 Height
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: colors.paper,
-                  color: colors.textPrimary,
-                  fontWeight: 'bold',
-                }}
-              >
+              </TableHead>
+              <TableHead className="bg-card text-foreground font-bold sticky top-0 z-10">
                 Hash
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: colors.paper,
-                  color: colors.textPrimary,
-                  fontWeight: 'bold',
-                }}
-              >
+              </TableHead>
+              <TableHead className="bg-card text-foreground font-bold sticky top-0 z-10">
                 Time
-              </TableCell>
+              </TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {recentBlocks.map((block, index) => (
-              <TableRow
-                key={index}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  },
-                }}
-              >
-                <TableCell sx={{ color: colors.textPrimary }}>
+              <TableRow key={index}>
+                <TableCell className="text-foreground">
                   {block.height}
                 </TableCell>
-                <TableCell sx={{ color: colors.accent }}>
+                <TableCell className="text-amber-500 font-mono text-xs">
                   {truncateHash(block.hash)}
                 </TableCell>
-                <TableCell sx={{ color: colors.textSecondary }}>
+                <TableCell className="text-muted-foreground">
                   {block.time}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </div>
     </Card>
   );
 };

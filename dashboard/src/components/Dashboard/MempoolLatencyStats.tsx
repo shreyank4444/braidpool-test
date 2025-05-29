@@ -1,41 +1,20 @@
-import React from 'react';
-import { Box, Typography, Paper, Divider } from '@mui/material';
+import React, { useRef, useEffect } from 'react';
+import { Separator } from '@/components/ui/separator';
 import Card from '../common/Card';
-import colors from '../../theme/colors';
-import * as d3 from 'd3';
+import * as d3 from 'd3'; // Keep d3 import
+import { cn } from '@/lib/utils'; // For FeeRate dot color
 
-// Mock data for latency stats
+// Mock data (kept as is)
 const latencyData = [
-  { time: '5m', value: 215 },
-  { time: '10m', value: 223 },
-  { time: '15m', value: 198 },
-  { time: '20m', value: 205 },
-  { time: '25m', value: 231 },
-  { time: '30m', value: 227 },
-  { time: '35m', value: 212 },
-  { time: '40m', value: 219 },
-  { time: '45m', value: 208 },
-  { time: '50m', value: 201 },
-  { time: '55m', value: 197 },
-  { time: '60m', value: 203 },
+  { time: '5m', value: 215 }, { time: '10m', value: 223 }, { time: '15m', value: 198 },
+  { time: '20m', value: 205 }, { time: '25m', value: 231 }, { time: '30m', value: 227 },
+  { time: '35m', value: 212 }, { time: '40m', value: 219 }, { time: '45m', value: 208 },
+  { time: '50m', value: 201 }, { time: '55m', value: 197 }, { time: '60m', value: 203 },
 ];
-
-// Mock data for mempool stats
 const mempoolData = {
-  size: '183.7 MB',
-  txCount: '12,487',
-  nextBlockFees: '0.00042 BTC',
-  feeRates: {
-    high: '21 sat/vB',
-    medium: '14 sat/vB',
-    low: '8 sat/vB',
-  },
-  feeEstimates: {
-    fastest: '~10 min',
-    fast: '~30 min',
-    standard: '~1 hour',
-    economy: '~3 hours',
-  },
+  size: '183.7 MB', txCount: '12,487', nextBlockFees: '0.00042 BTC',
+  feeRates: { high: '21 sat/vB', medium: '14 sat/vB', low: '8 sat/vB' },
+  feeEstimates: { fastest: '~10 min', fast: '~30 min', standard: '~1 hour', economy: '~3 hours' },
 };
 
 // StatItem component for displaying a statistic with label
@@ -48,25 +27,15 @@ const StatItem = ({
   value: string;
   color?: string;
 }) => (
-  <Box sx={{ mb: 2 }}>
-    <Typography
-      variant="body2"
-      color="textSecondary"
-      sx={{ fontSize: '0.8rem', mb: 0.5 }}
-    >
-      {label}
-    </Typography>
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 500,
-        color: color || colors.textPrimary,
-        fontSize: '1.1rem',
-      }}
+  <div className="mb-4">
+    <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+    <p
+      className={`text-lg font-medium ${!color ? 'text-foreground' : ''}`}
+      style={color ? { color: color } : {}}
     >
       {value}
-    </Typography>
-  </Box>
+    </p>
+  </div>
 );
 
 // Fee rate component for displaying fee levels
@@ -79,101 +48,128 @@ const FeeRate = ({
   rate: string;
   time: string;
 }) => (
-  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Box
-        sx={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          backgroundColor:
-            level === 'Fastest'
-              ? colors.error
-              : level === 'Fast'
-                ? colors.warning
-                : level === 'Standard'
-                  ? colors.success
-                  : colors.textSecondary,
-          mr: 1.5,
-        }}
-      />
-      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-        {level}
-      </Typography>
-    </Box>
-    <Typography
-      variant="body2"
-      sx={{ fontSize: '0.85rem', color: colors.textSecondary }}
-    >
-      {rate}
-    </Typography>
-    <Typography
-      variant="body2"
-      sx={{ fontSize: '0.85rem', color: colors.textSecondary }}
-    >
-      {time}
-    </Typography>
-  </Box>
+  <div className="flex justify-between items-center mb-3">
+    <div className="flex items-center">
+      <div
+        className={cn(
+          "w-2 h-2 rounded-full mr-3 flex-shrink-0",
+          level === 'Fastest' ? 'bg-red-500' // Destructive
+          : level === 'Fast' ? 'bg-orange-500' // Warning
+          : level === 'Standard' ? 'bg-green-500' // Success
+          : 'bg-muted-foreground' // Default/Muted
+        )}
+      ></div>
+      <p className="text-sm text-foreground">{level}</p>
+    </div>
+    <p className="text-sm text-muted-foreground">{rate}</p>
+    <p className="text-sm text-muted-foreground">{time}</p>
+  </div>
 );
 
 const MempoolLatencyStats = () => {
+  const chartRef = useRef<SVGSVGElement>(null); // For D3 chart
+
+  // Effect for D3 chart rendering (simplified, no error/loading state from props)
+  useEffect(() => {
+    if (!chartRef.current || latencyData.length === 0) return;
+
+    const getCssVariable = (variableName: string, fallback: string) => {
+      if (typeof window !== 'undefined') {
+        return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || fallback;
+      }
+      return fallback;
+    };
+    
+    d3.select(chartRef.current).selectAll('*').remove();
+
+    const height = 200; // Fixed height for the chart area
+    const margin = { top: 5, right: 5, bottom: 5, left: 5 }; // Minimal margins
+    const width = chartRef.current.clientWidth - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    const svg = d3
+      .select(chartRef.current)
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Simplified scales - adjust domain based on actual latencyData values if needed
+    const x = d3
+      .scaleLinear()
+      .domain([0, latencyData.length - 1])
+      .range([0, width]);
+
+    const yMin = d3.min(latencyData, d => d.value) || 190;
+    const yMax = d3.max(latencyData, d => d.value) || 240;
+    const y = d3
+      .scaleLinear()
+      .domain([yMin - 5, yMax + 5]) // Dynamic Y scale with padding
+      .range([chartHeight, 0]);
+
+    const line = d3
+      .line<{ time: string; value: number }>()
+      .x((_d, i) => x(i))
+      .y((d) => y(d.value))
+      .curve(d3.curveMonotoneX);
+
+    svg
+      .append('path')
+      .datum(latencyData)
+      .attr('fill', 'none')
+      .attr('stroke', getCssVariable('--primary', '#3986e8'))
+      .attr('stroke-width', 2)
+      .attr('d', line);
+
+    svg
+      .selectAll('.dot')
+      .data(latencyData)
+      .enter()
+      .append('circle')
+      .attr('class', 'dot')
+      .attr('cx', (_d, i) => x(i))
+      .attr('cy', (d) => y(d.value))
+      .attr('r', 3)
+      .attr('fill', getCssVariable('--primary', '#3986e8'))
+      .attr('stroke', getCssVariable('--card', '#1e1e1e')) // Assuming --card is background
+      .attr('stroke-width', 1);
+
+  }, [latencyData]); // Rerun if data changes
+
   return (
     <Card
       title="Network Performance"
       subtitle="Mempool stats and latency metrics"
-      accentColor={colors.cardAccentPrimary}
+      accentColor="var(--primary)"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 3,
-        }}
-      >
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Mempool Stats */}
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
-          <Paper
-            elevation={0}
-            sx={{
-              backgroundColor: colors.paper,
-              borderRadius: 1,
-              border: `1px solid ${colors.primary}20`,
-              p: 2,
-              height: '100%',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+        <div className="flex-1 w-full">
+          <div className="bg-card text-foreground rounded-lg border border-primary/20 p-4 h-full">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
               Mempool Status
-            </Typography>
+            </h3>
 
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1, mb: 2 }}>
-              <Box sx={{ width: { xs: '50%', sm: '50%' }, p: 1 }}>
-                <StatItem label="SIZE" value={mempoolData.size} />
-              </Box>
-              <Box sx={{ width: { xs: '50%', sm: '50%' }, p: 1 }}>
-                <StatItem label="TRANSACTIONS" value={mempoolData.txCount} />
-              </Box>
-              <Box sx={{ width: { xs: '50%', sm: '50%' }, p: 1 }}>
-                <StatItem
-                  label="NEXT BLOCK FEES"
-                  value={mempoolData.nextBlockFees}
-                  color={colors.secondary}
-                />
-              </Box>
-              <Box sx={{ width: { xs: '50%', sm: '50%' }, p: 1 }}>
-                <StatItem
-                  label="HIGH PRIORITY FEE"
-                  value={mempoolData.feeRates.high}
-                  color={colors.error}
-                />
-              </Box>
-            </Box>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-4 mb-4">
+              <StatItem label="SIZE" value={mempoolData.size} />
+              <StatItem label="TRANSACTIONS" value={mempoolData.txCount} />
+              <StatItem
+                label="NEXT BLOCK FEES"
+                value={mempoolData.nextBlockFees}
+                color="var(--secondary)" // Using CSS variable
+              />
+              <StatItem
+                label="HIGH PRIORITY FEE"
+                value={mempoolData.feeRates.high}
+                color="var(--destructive)" // Using CSS variable
+              />
+            </div>
 
-            <Divider sx={{ my: 2 }} />
+            <Separator className="my-4" />
 
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 500 }}>
+            <h4 className="text-base font-medium text-foreground mb-3">
               Fee Estimates
-            </Typography>
+            </h4>
 
             <FeeRate
               level="Fastest"
@@ -195,187 +191,36 @@ const MempoolLatencyStats = () => {
               rate={mempoolData.feeRates.low}
               time={mempoolData.feeEstimates.economy}
             />
-          </Paper>
-        </Box>
+          </div>
+        </div>
 
         {/* Latency Stats */}
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
-          <Paper
-            elevation={0}
-            sx={{
-              backgroundColor: colors.paper,
-              borderRadius: 1,
-              border: `1px solid ${colors.primary}20`,
-              p: 2,
-              height: '100%',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+        <div className="flex-1 w-full">
+          <div className="bg-card text-foreground rounded-lg border border-primary/20 p-4 h-full">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
               Network Latency
-            </Typography>
+            </h3>
 
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  Current:{' '}
-                  <span style={{ color: colors.textPrimary, fontWeight: 500 }}>
-                    203 ms
-                  </span>
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  Avg (1h):{' '}
-                  <span style={{ color: colors.textPrimary, fontWeight: 500 }}>
-                    211 ms
-                  </span>
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  Best:{' '}
-                  <span style={{ color: colors.success, fontWeight: 500 }}>
-                    197 ms
-                  </span>
-                </Typography>
-              </Box>
-            </Box>
+            <div className="flex justify-between mb-4">
+              <p className="text-xs text-muted-foreground">Current: <span className="text-foreground font-medium">203 ms</span></p>
+              <p className="text-xs text-muted-foreground">Avg (1h): <span className="text-foreground font-medium">211 ms</span></p>
+              <p className="text-xs text-muted-foreground">Best: <span className="text-green-500 font-medium">197 ms</span></p>
+            </div>
+            
+            <div className="h-48 mt-6 relative">
+              <svg ref={chartRef} width="100%" height="100%"></svg>
+            </div>
 
-            {/* Latency Chart (simplified) */}
-            <Box
-              sx={{
-                height: 200,
-                mt: 3,
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundImage: `linear-gradient(to right, ${colors.chartGrid} 1px, transparent 1px), linear-gradient(to bottom, ${colors.chartGrid} 1px, transparent 1px)`,
-                  backgroundSize: '20% 25%',
-                  opacity: 0.2,
-                },
-              }}
-            >
-              {/* Line graph would be created with D3.js */}
-              <svg width="100%" height="100%">
-                <path
-                  d={`M 0,${
-                    100 - ((latencyData[0].value - 190) / 50) * 100
-                  } ${latencyData
-                    .map((point, i) => {
-                      const x = i * (100 / (latencyData.length - 1));
-                      const y = 100 - ((point.value - 190) / 50) * 100;
-                      return `L ${x},${y}`;
-                    })
-                    .join(' ')}`}
-                  fill="none"
-                  stroke={colors.primary}
-                  strokeWidth="2"
-                />
-                {latencyData.map((point, i) => {
-                  const x = i * (100 / (latencyData.length - 1));
-                  const y = 100 - ((point.value - 190) / 50) * 100;
-                  return (
-                    <circle
-                      key={i}
-                      cx={`${x}%`}
-                      cy={`${y}%`}
-                      r="3"
-                      fill={colors.primary}
-                      stroke={colors.chartBackground}
-                      strokeWidth="1"
-                    />
-                  );
-                })}
-              </svg>
+            <Separator className="my-4" /> {/* Adjusted margin to my-4 from my-2 */}
 
-              {/* Y-axis labels */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  pr: 1,
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.7rem', color: colors.textSecondary }}
-                >
-                  240ms
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.7rem', color: colors.textSecondary }}
-                >
-                  215ms
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.7rem', color: colors.textSecondary }}
-                >
-                  190ms
-                </Typography>
-              </Box>
-
-              {/* X-axis labels */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: -20,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.7rem', color: colors.textSecondary }}
-                >
-                  60m
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.7rem', color: colors.textSecondary }}
-                >
-                  30m
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.7rem', color: colors.textSecondary }}
-                >
-                  5m
-                </Typography>
-              </Box>
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div className="grid grid-cols-3 gap-x-2 mt-4">
               <StatItem label="SWITCHING TIME" value="1.8s" />
               <StatItem label="LAMBDA" value="1.87" />
               <StatItem label="A PARAMETER" value="3.2" />
-            </Box>
-          </Paper>
-        </Box>
-      </Box>
+            </div>
+          </div>
+        </div>
+      </div>
     </Card>
   );
 };

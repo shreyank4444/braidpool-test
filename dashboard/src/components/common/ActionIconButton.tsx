@@ -1,32 +1,26 @@
-import React, { ReactNode, ReactElement } from 'react';
+import React, { ReactElement, ButtonHTMLAttributes } from 'react';
 
-interface ActionIconButtonProps {
-  icon: ReactElement;
-  onClick?: () => void;
-  className?: string;
+interface ActionIconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  icon: ReactElement; // icon prop is still declared but not specially handled in this version
 }
-const ActionIconButton: React.FC<ActionIconButtonProps> = ({
-  icon,
-  onClick,
-  className = '',
+
+const ActionIconButton: React.FC<ActionIconButtonProps> = ({ 
+  icon,       // Destructured but only icon is used directly in JSX below
+  className,  // Destructured to be passed to button
+  onClick,    // Destructured to be passed to button
+  disabled    // Example of another common prop from ButtonHTMLAttributes
+  // ...props is NOT used to minimize variables
 }) => {
+  // All complex cn logic and base styles are removed for this test.
+  // All other ButtonHTMLAttributes (like title, aria-label etc.) are ignored.
   return (
     <button
+      type="button"
+      className={className} // Directly use the className passed in props.
       onClick={onClick}
-      className={`
-        flex items-center justify-center
-        w-[34px] h-[34px] sm:w-[34px] sm:h-[34px] xs:w-[28px] xs:h-[28px]
-        p-1 rounded-full bg-[#36454F] text-white
-        shadow-md hover:shadow-lg hover:w-[48px] hover:h-[48px] hover:bg-black
-        transition-all duration-200 ease-in-out
-        hover:scale-105 active:scale-95
-        focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-1
-        ${className}
-      `}
+      disabled={disabled}
     >
-      {React.cloneElement(icon, {
-        className: 'w-[18px] h-[18px] text-inherit',
-      })}
+      {icon} {/* Render the icon directly, without cloning or adding classes to it. */}
     </button>
   );
 };

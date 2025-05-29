@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTransform, useScroll } from 'framer-motion';
+import type { Bead } from './lib/types';
 import DashboardHeader from './DashboardHeader';
 import { FilterBar } from './FilterBar/FilterBar';
 import EnhancedBlocksTab from './BlockVisulisation/Block';
@@ -12,7 +13,7 @@ import { Layers } from 'lucide-react';
 import { TrendsTab } from './Trends/TrendsTab';
 
 export default function MinedSharesExplorer() {
-  const [expandedBeads, setExpandedBeads] = useState({
+  const [expandedBeads, setExpandedBeads] = useState<Record<string, boolean>>({
     bead1: true,
     bead2: false,
   });
@@ -71,7 +72,7 @@ export default function MinedSharesExplorer() {
 
   const handleParentClick = (parentHash: string) => {
     // Find the bead with this hash
-    const bead = BEADS.find((b) => b.name === parentHash);
+    const bead = BEADS.find((b: Bead) => b.name === parentHash);
     if (bead) {
       toggleBead(bead.id);
     }

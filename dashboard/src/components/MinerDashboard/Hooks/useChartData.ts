@@ -5,9 +5,14 @@ export function useChartData(timeRange: string) {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  const refetch = () => setRefetchTrigger(prev => prev + 1);
 
   // Generate chart data based on time range
   useEffect(() => {
+    // setError(null); // Optionally reset error on new fetch
     setIsLoading(true);
 
     // Find the selected time range
@@ -112,7 +117,7 @@ export function useChartData(timeRange: string) {
       setData(dataPoints);
       setIsLoading(false);
     }, 500);
-  }, [timeRange]);
+  }, [timeRange, refetchTrigger]);
 
-  return { data, isLoading, dateRange };
+  return { data, isLoading, dateRange, error, refetch };
 }

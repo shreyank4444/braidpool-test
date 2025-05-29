@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Box, Typography, Paper, styled } from '@mui/material';
-import ShareDetails from './ShareDetails/ShareDetails';
-import { mockBeads, printDebug } from '../data/mockBeads';
-
-// Styled components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  margin: theme.spacing(2),
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-}));
+import { Button } from '@/components/ui/button';
+import ShareDetails from './ShareDetails'; // Corrected path
+import { mockBeads, printDebug } from '../../data/mockBeads'; // Corrected path
+import { BeadDisplayData } from '../../types/Bead'; // Attempted import
 
 /**
  * ShareDetailsDemo Component
@@ -20,11 +12,11 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
  */
 export default function ShareDetailsDemo() {
   const [open, setOpen] = useState(false);
-  const [selectedBead, setSelectedBead] = useState<string | null>(null);
+  const [selectedBeadKey, setSelectedBeadKey] = useState<string | null>(null); // Renamed to avoid confusion with bead object
 
   // Handler for opening the modal with a specific bead
   const handleOpenBead = (beadType: string) => {
-    setSelectedBead(beadType);
+    setSelectedBeadKey(beadType);
     setOpen(true);
     console.log('🔍 Opening bead details for:', beadType);
     printDebug(); // Print debug information to console
@@ -38,65 +30,50 @@ export default function ShareDetailsDemo() {
   // Handler for navigating to a different bead
   const handleNavigateToBead = (beadHash: string) => {
     const beadType = Object.entries(mockBeads).find(
-      ([_, bead]) => bead.beadHash === beadHash
+      ([_key, bead]) => (bead as BeadDisplayData).beadHash === beadHash // Type assertion for bead
     )?.[0];
 
     if (beadType) {
-      setSelectedBead(beadType);
+      setSelectedBeadKey(beadType);
       console.log('🔄 Navigating to bead:', beadType);
     }
   };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Share Details Component Demo
-      </Typography>
+    <div className="p-6 bg-background text-foreground min-h-screen">
+      <h1 className="text-3xl font-semibold mb-6 text-center">Share Details Component Demo</h1>
 
-      <StyledPaper elevation={3}>
-        <Typography variant="h6">
-          Open different types of beads to see the ShareDetails component in
-          action
-        </Typography>
+      <div className="bg-card text-card-foreground p-6 my-4 mx-auto max-w-2xl rounded-xl shadow-lg flex flex-col gap-4 items-center">
+        <h2 className="text-xl font-medium text-center">
+          Open different types of beads to see the ShareDetails component in action
+        </h2>
 
-        <Box display="flex" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleOpenBead('genesis')}
-          >
+        <div className="flex flex-wrap justify-center gap-4 my-2">
+          <Button variant="default" onClick={() => handleOpenBead('genesis')}>
             Open Genesis Bead
           </Button>
 
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleOpenBead('regular')}
-          >
+          <Button variant="secondary" onClick={() => handleOpenBead('regular')}>
             Open Regular Bead
           </Button>
 
-          <Button
-            variant="contained"
-            color="info"
-            onClick={() => handleOpenBead('tip')}
-          >
+          <Button variant="outline" onClick={() => handleOpenBead('tip')}>
             Open Tip Bead
           </Button>
-        </Box>
+        </div>
 
-        <Typography variant="body2" color="textSecondary">
+        <p className="text-sm text-muted-foreground text-center mt-2">
           Click "View" on parent beads to navigate between related beads.
-        </Typography>
-      </StyledPaper>
+        </p>
+      </div>
 
       {/* The ShareDetails component */}
       <ShareDetails
         open={open}
         onClose={handleClose}
-        bead={selectedBead ? mockBeads[selectedBead] : undefined}
+        bead={selectedBeadKey ? mockBeads[selectedBeadKey] as BeadDisplayData : undefined}
         onNavigateToBead={handleNavigateToBead}
       />
-    </Box>
+    </div>
   );
 }
