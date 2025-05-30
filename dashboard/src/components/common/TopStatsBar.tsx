@@ -1,12 +1,16 @@
 import React from 'react';
-import { Box, Typography, Stack, Skeleton } from '@mui/material';
-import colors from '../../theme/colors';
+// Removed MUI imports: Box, Typography, Stack, Skeleton
+// Removed colors import as it's no longer used
+import { Skeleton as ShadcnSkeleton } from '~/components/ui/skeleton';
+// Assuming icons would be from lucide-react if used, e.g., import { ArrowUpRight } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
   value: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode; // For potential lucide-react icon
   loading?: boolean;
+  // change?: string; // Example: "+5.2%" - not in original data but common for stat cards
+  // changeColorClass?: string; // Example: "text-green-500" or "text-red-500"
 }
 
 interface TopStatsBarProps {
@@ -18,73 +22,58 @@ const StatCard: React.FC<StatCardProps> = ({
   value,
   icon,
   loading = false,
+  // change,
+  // changeColorClass,
 }) => {
   return (
-    <Box
-      sx={{
-        backgroundColor: colors.paper,
-        borderRadius: 1,
-        padding: 2,
-        height: '100%',
-        border: `1px solid ${colors.border}`,
-        transition: 'transform 0.2s',
-        '&:hover': {
-          transform: 'translateY(-3px)',
-          boxShadow: `0 8px 16px -8px ${colors.shadow}`,
-        },
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        {icon && <Box sx={{ mr: 1, color: colors.primary }}>{icon}</Box>}
-        <Typography variant="subtitle2" color="textSecondary">
-          {title}
-        </Typography>
-      </Box>
-      {loading ? (
-        <Skeleton variant="text" width="80%" height={40} />
-      ) : (
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            color: colors.textPrimary,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {value}
-        </Typography>
-      )}
-    </Box>
+    <div className="bg-card p-4 rounded-lg border border-border shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col justify-between">
+      <div>
+        <div className="flex items-center mb-1 text-muted-foreground">
+          {icon && <div className="mr-2 text-primary">{icon}</div>}
+          {/* MUI subtitle2 was 0.875rem, text-xs is 0.75rem, text-sm is 0.875rem. Let's use text-sm */}
+          <p className="text-sm">{title}</p>
+        </div>
+        {loading ? (
+          <>
+            <ShadcnSkeleton className="h-8 w-3/4 mt-1 mb-2" /> 
+            {/* <ShadcnSkeleton className="h-4 w-1/2" /> Placeholder if there was a change/subtitle line */}
+          </>
+        ) : (
+          <p className="text-2xl font-bold text-foreground truncate">
+            {value}
+          </p>
+        )}
+      </div>
+      {/* {change && !loading && ( // Example of how 'change' could be rendered
+        <p className={`text-sm mt-1 ${changeColorClass || ''}`}>{change}</p>
+      )} */}
+    </div>
   );
 };
 
 const TopStatsBar: React.FC<TopStatsBarProps> = ({ loading = false }) => {
+  const stats = [
+    { title: "Shares Submitted", value: "208,450" },
+    { title: "Stale Shares", value: "756" },
+    { title: "Pool Hashrate", value: "98.3 PH/s" },
+    { title: "Recent Blocks Won", value: "34" },
+  ];
+
   return (
-    <Box sx={{ mb: 3 }}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={3}
-        sx={{ width: '100%' }}
-      >
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
+    <div className="mb-6"> {/* Was Box sx={{ mb: 3 }} -> mb-6 (24px) or mb-8 (32px) */}
+      {/* Replaced Stack with a responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
           <StatCard
-            title="Shares Submitted"
-            value="208,450"
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
             loading={loading}
+            // icon={<SomeLucideIcon className="h-4 w-4" />} // Example if icons were used
           />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
-          <StatCard title="Stale Shares" value="756" loading={loading} />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
-          <StatCard title="Pool Hashrate" value="98.3 PH/s" loading={loading} />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
-          <StatCard title="Recent Blocks Won" value="34" loading={loading} />
-        </Box>
-      </Stack>
-    </Box>
+        ))}
+      </div>
+    </div>
   );
 };
 

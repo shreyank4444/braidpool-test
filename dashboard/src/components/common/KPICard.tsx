@@ -1,15 +1,15 @@
 import React from 'react';
 import {
-  Box,
-  Card,
-  Typography,
-  CircularProgress,
+  Card as ShadcnUICard,
+  CardContent,
+} from '~/components/ui/card';
+import {
   Tooltip,
-  useTheme,
-} from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '~/components/ui/tooltip';
+import { TrendingUp, TrendingDown, Info, Loader2 } from 'lucide-react';
 
 interface KPICardProps {
   title: string;
@@ -19,7 +19,8 @@ interface KPICardProps {
   subtitle?: string;
   loading?: boolean;
   info?: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode; // This prop was in the original but not used in its JSX. Retaining for API compatibility.
+  className?: string;
 }
 
 const KPICard: React.FC<KPICardProps> = ({
@@ -30,129 +31,77 @@ const KPICard: React.FC<KPICardProps> = ({
   subtitle,
   loading = false,
   info,
-  icon,
+  icon, // Retained
+  className = '',
 }) => {
-  const theme = useTheme();
-
   const renderTrend = () => {
-    if (change === undefined) return null;
+    if (change === undefined || change === null) return null;
 
     const isPositive = change >= 0;
-    const color = isPositive
-      ? theme.palette.success.main
-      : theme.palette.error.main;
-    const Icon = isPositive ? TrendingUpIcon : TrendingDownIcon;
+    const colorClass = isPositive ? "text-braidpoolSuccess" : "text-braidpoolError"; // Using custom Tailwind colors
+    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
 
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', color, mt: 0.5 }}>
-        <Icon fontSize="small" sx={{ mr: 0.5 }} />
-        <Typography variant="body2" component="span" sx={{ color }}>
+      <div className={`flex items-center mt-1 ${colorClass}`}>
+        <TrendIcon className="h-4 w-4 mr-1" />
+        <span className="text-sm">
           {Math.abs(change)}% {isPositive ? 'increase' : 'decrease'}
-        </Typography>
-      </Box>
+        </span>
+      </div>
     );
   };
 
   return (
-    <Card
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        minHeight: 90,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        borderRadius: 1,
-        border: '1px solid rgba(0,0,0,0.05)',
-        backgroundColor: '#fff',
-      }}
+    <ShadcnUICard
+      className={`p-4 flex flex-col h-full min-h-[90px] bg-card text-card-foreground shadow-sm rounded-lg border relative ${className}`}
     >
-      {/* Subtitle first (if provided) - matches FOREMAN layout */}
-      {subtitle && (
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            fontSize: '0.7rem',
-            textTransform: 'uppercase',
-            textAlign: 'center',
-            mb: 0.5,
-          }}
-        >
-          {subtitle}
-        </Typography>
+      {/* Info icon using shadcn/ui Tooltip */}
+      {info && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 text-muted-foreground cursor-help opacity-60 absolute top-2 right-2" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{info}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
-      {/* Value section with large font */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-          mb: 0.5,
-        }}
-      >
-        {loading ? (
-          <CircularProgress size={24} sx={{ my: 1 }} />
-        ) : (
-          <>
-            <Typography
-              variant="h5"
-              component="div"
-              fontWeight="bold"
-              sx={{ textAlign: 'center' }}
-            >
-              {value}
-            </Typography>
-            {unit && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ ml: 0.5, mb: 0.2 }}
-              >
-                {unit}
-              </Typography>
-            )}
-          </>
-        )}
-      </Box>
+      {/* Subtitle */}
+      {subtitle && (
+        <p className="text-xs text-muted-foreground uppercase text-center mb-1">
+          {subtitle}
+        </p>
+      )}
 
-      {/* Title below the value - matches FOREMAN layout */}
-      <Typography
-        variant="subtitle2"
-        color="text.secondary"
-        sx={{
-          textAlign: 'center',
-          fontSize: '0.75rem',
-          fontWeight: 'normal',
-          color: '#666',
-        }}
-      >
+      {/* Value section */}
+      <div className="flex-grow flex flex-col items-center justify-center"> {/* Centering content vertically */}
+        {loading ? (
+          <Loader2 className="h-8 w-8 text-primary my-1 animate-spin" /> // Increased size for visibility
+        ) : (
+          <div className="flex justify-center items-end mb-1">
+            <h3 className="text-2xl font-bold text-center">{value}</h3>
+            {unit && (
+              <span className="text-sm text-muted-foreground ml-1 mb-0.5">
+                {unit}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Title below the value */}
+      <p className="text-center text-xs text-muted-foreground font-normal mt-1">
         {title}
-      </Typography>
+      </p>
 
       {/* Trend indicator at bottom */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 'auto' }}>
+      <div className="flex justify-center mt-auto pt-1"> {/* pt-1 to give some space before trend */}
         {renderTrend()}
-      </Box>
-
-      {/* Info icon if needed */}
-      {info && (
-        <Tooltip title={info} arrow placement="top">
-          <InfoOutlinedIcon
-            fontSize="small"
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              color: 'text.secondary',
-              cursor: 'help',
-              opacity: 0.6,
-            }}
-          />
-        </Tooltip>
-      )}
-    </Card>
+      </div>
+    </ShadcnUICard>
   );
 };
 

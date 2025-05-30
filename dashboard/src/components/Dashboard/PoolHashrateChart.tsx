@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Box,
-  Typography,
-  useTheme,
-  CircularProgress,
-  Alert,
-} from '@mui/material';
+// Removed MUI imports: Box, Typography, useTheme, CircularProgress, Alert
 import * as d3 from 'd3';
-import colors from '../../theme/colors';
-import Card from '../common/Card';
+import colors from '../../theme/colors'; // Kept for D3 chart styling
+import Card from '../common/Card'; // Assuming this is the migrated shadcn/ui Card
+
+import {
+  Alert as ShadcnAlert,
+  AlertDescription,
+  AlertTitle,
+} from '~/components/ui/alert';
+import { Loader2, Info, AlertTriangle } from 'lucide-react';
 
 // Mock data for the hashrate over time
 const mockHashrateData = [
@@ -29,36 +30,51 @@ interface PoolHashrateChartProps {
 }
 
 const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
-  height = 300,
-  data = mockHashrateData,
+  height = 300, // Default height for the chart container div
+  data = mockHashrateData, // Prop for data, defaults to mock
   loading = false,
 }) => {
   const chartRef = useRef<SVGSVGElement>(null);
-  const theme = useTheme();
-  const [error, setError] = useState<string | null>(null);
+  // Removed: const theme = useTheme();
+  const [chartError, setChartError] = useState<string | null>(null); // Renamed to avoid conflict with 'error' prop if ever added
 
   useEffect(() => {
+    // If loading, don't try to render chart
+    if (loading) {
+        // Clear previous chart content when loading new data
+        if (chartRef.current) {
+            d3.select(chartRef.current).selectAll('*').remove();
+        }
+        setChartError(null); // Clear previous errors
+        return;
+    }
+
     if (!chartRef.current) return;
 
     // Clear previous error state
-    setError(null);
+    setChartError(null);
 
     // Check if data is empty or invalid
     if (!data || data.length === 0) {
-      setError('No hashrate data available');
+      setChartError('No hashrate data available to display.'); // Specific message for no data
+      d3.select(chartRef.current).selectAll('*').remove(); // Clear chart area
       return;
     }
 
     try {
-      // Clear previous content
       d3.select(chartRef.current).selectAll('*').remove();
 
-      // Set up dimensions and margins
       const margin = { top: 30, right: 30, bottom: 50, left: 60 };
-      const width = chartRef.current.clientWidth - margin.left - margin.right;
+      // Use clientWidth of the parent of SVG for responsive width
+      const parentWidth = (chartRef.current.parentNode as HTMLElement)?.clientWidth || chartRef.current.clientWidth;
+      const width = parentWidth - margin.left - margin.right;
       const chartHeight = height - margin.top - margin.bottom;
 
-      // Create SVG
+      if (width <= 0 || chartHeight <= 0) {
+        setChartError("Chart container has invalid dimensions.");
+        return;
+      }
+
       const svg = d3
         .select(chartRef.current)
         .attr('width', width + margin.left + margin.right)
@@ -66,189 +82,139 @@ const PoolHashrateChart: React.FC<PoolHashrateChartProps> = ({
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // Set up scales
       const x = d3
-        .scaleBand()
+        .scaleBand<string>()
         .domain(data.map((d) => d.time))
         .range([0, width])
         .padding(0.1);
 
       const y = d3
         .scaleLinear()
-        .domain([0, 100]) // Fixed y-axis from 0 to 100
+        .domain([0, d3.max(data, (d) => d.value) || 100]) // Dynamic Y-axis or fixed 0-100
         .range([chartHeight, 0]);
 
-      // Add the X axis
       svg
         .append('g')
         .attr('transform', `translate(0,${chartHeight})`)
         .call(d3.axisBottom(x))
         .selectAll('text')
         .style('fill', colors.textSecondary)
-        .style('font-size', '12px');
+        .style('font-size', '10px'); // Adjusted font size
 
-      // Add the Y axis
       svg
         .append('g')
-        .call(
-          d3
-            .axisLeft(y)
-            .tickValues([0, 20, 40, 60, 80, 100])
-            .tickFormat((d) => `${d}`)
-        )
+        .call(d3.axisLeft(y).ticks(5)) // Adjusted ticks
         .selectAll('text')
         .style('fill', colors.textSecondary)
-        .style('font-size', '12px');
-
-      // Add grid lines
+        .style('font-size', '10px'); // Adjusted font size
+      
       svg
         .append('g')
         .attr('class', 'grid')
+        .call(d3.axisLeft(y)
+            .ticks(5)
+            .tickSize(-width)
+            .tickFormat(() => "")
+        )
         .selectAll('line')
-        .data([0, 20, 40, 60, 80, 100])
-        .enter()
-        .append('line')
-        .attr('x1', 0)
-        .attr('x2', width)
-        .attr('y1', (d) => y(d))
-        .attr('y2', (d) => y(d))
         .attr('stroke', colors.chartGrid)
-        .attr('stroke-dasharray', '3,3');
+        .attr('stroke-dasharray', '2,2'); // Adjusted dasharray
 
-      // Create line generator
       const line = d3
         .line<{ time: string; value: number }>()
-        .x((d) => x(d.time)! + x.bandwidth() / 2)
+        .x((d) => (x(d.time) ?? 0) + x.bandwidth() / 2) // Added nullish coalescing for x(d.time)
         .y((d) => y(d.value))
         .curve(d3.curveMonotoneX);
 
-      // Add the line path
       svg
         .append('path')
         .datum(data)
         .attr('fill', 'none')
         .attr('stroke', colors.chartLine)
-        .attr('stroke-width', 2.5)
+        .attr('stroke-width', 2) // Adjusted stroke-width
         .attr('d', line);
 
-      // Add data points
       svg
         .selectAll('.dot')
         .data(data)
         .enter()
         .append('circle')
         .attr('class', 'dot')
-        .attr('cx', (d) => x(d.time)! + x.bandwidth() / 2)
+        .attr('cx', (d) => (x(d.time) ?? 0) + x.bandwidth() / 2) // Added nullish coalescing
         .attr('cy', (d) => y(d.value))
-        .attr('r', 4)
+        .attr('r', 3) // Adjusted radius
         .attr('fill', colors.chartLine)
         .attr('stroke', colors.chartBackground)
-        .attr('stroke-width', 2);
+        .attr('stroke-width', 1.5); // Adjusted stroke-width
 
-      // Add y-axis label
       svg
         .append('text')
         .attr('transform', 'rotate(-90)')
-        .attr('y', -margin.left + 15)
+        .attr('y', -margin.left + 20) // Adjusted position
         .attr('x', -chartHeight / 2)
         .attr('text-anchor', 'middle')
         .style('fill', colors.textSecondary)
+        .style('font-size', '12px') // Explicit font size
         .text('PH/s');
+      
+      // X-axis label removed as per typical D3 chart style unless explicitly needed
+      // ... (console logs removed for brevity)
 
-      // Add x-axis label
-      svg
-        .append('text')
-        .attr('y', chartHeight + margin.bottom - 10)
-        .attr('x', width / 2)
-        .attr('text-anchor', 'middle')
-        .style('fill', colors.textSecondary)
-        .text('Time');
-
-      // Print debug info
-      console.log(
-        '🔄 Pool hashrate chart rendered with',
-        data.length,
-        'data points'
-      );
     } catch (err) {
       console.error('❌ Error rendering hashrate chart:', err);
-      setError('Error rendering hashrate chart');
+      setChartError('Error rendering hashrate chart.');
     }
-  }, [height, data]);
+  }, [height, data, loading]); // Added loading to dependencies
 
-  // Render placeholders for loading or error states
-  const renderContent = () => {
+  const renderChartArea = () => {
     if (loading) {
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            flexDirection: 'column',
-            p: 3,
-          }}
-        >
-          <CircularProgress size={40} sx={{ mb: 2 }} />
-          <Typography variant="body2" color="textSecondary">
-            Loading hashrate data...
-          </Typography>
-        </Box>
+        <div className={`flex flex-col items-center justify-center h-full min-h-[${height}px]`}>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground mt-2">Loading chart data...</p>
+        </div>
       );
     }
 
-    if (error) {
+    if (chartError === 'No hashrate data available to display.') {
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            p: 3,
-          }}
-        >
-          <Alert
-            severity="info"
-            sx={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(30, 73, 118, 0.1)',
-              '& .MuiAlert-icon': {
-                color: colors.primary,
-              },
-            }}
-          >
-            {error}
-            <Box component="span" sx={{ ml: 1 }}>
-              — Check your connection or try again later
-            </Box>
-          </Alert>
-        </Box>
+        <div className={`flex items-center justify-center h-full min-h-[${height}px] p-4`}>
+          <ShadcnAlert variant="default" className="w-full max-w-md">
+            <Info className="h-4 w-4" />
+            <AlertTitle>No Data Available</AlertTitle>
+            <AlertDescription>{chartError}</AlertDescription>
+          </ShadcnAlert>
+        </div>
       );
     }
-
-    return <svg ref={chartRef} style={{ width: '100%', height: '100%' }} />;
+    
+    if (chartError) {
+      return (
+        <div className={`flex items-center justify-center h-full min-h-[${height}px] p-4`}>
+          <ShadcnAlert variant="destructive" className="w-full max-w-md">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error Loading Chart</AlertTitle>
+            <AlertDescription>{chartError}</AlertDescription>
+          </ShadcnAlert>
+        </div>
+      );
+    }
+    // Ensure the SVG has a key that changes if data changes significantly, or ensure D3 correctly handles updates.
+    // The current useEffect clears and redraws, which is fine for this scope.
+    return <svg ref={chartRef} className="w-full h-full" />;
   };
-
+  
   return (
     <Card
       title="Pool Hashrate"
       subtitle="Live network performance over time"
-      accentColor={colors.cardAccentPrimary}
+      // Using a CSS variable for accentColor or a direct hex value if colors.ts is removed
+      accentColor="hsl(var(--primary))" 
     >
-      <Box
-        sx={{
-          width: '100%',
-          height: height,
-          overflow: 'hidden',
-        }}
-      >
-        {renderContent()}
-      </Box>
+      {/* Replaced Box with div and Tailwind classes, ensuring height is passed for the chart area */}
+      <div className={`w-full overflow-hidden text-xs h-[${height}px]`}>
+        {renderChartArea()}
+      </div>
     </Card>
   );
 };

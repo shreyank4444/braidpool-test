@@ -1,16 +1,15 @@
 import React from 'react';
+// Removed MUI Table imports
 import {
-  Table,
+  Table as ShadcnTable,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Box,
-  Typography,
-} from '@mui/material';
-import Card from '../common/Card';
-import colors from '../../theme/colors';
+} from '~/components/ui/table';
+import Card from '../common/Card'; // Assuming this is the migrated shadcn/ui Card
+// import colors from '../../theme/colors'; // Will be removed as sx props are gone
 
 // Mock data for recent blocks
 const recentBlocks = [
@@ -48,83 +47,52 @@ const RecentBlocksTable: React.FC<RecentBlocksTableProps> = ({
     return hash.substring(0, 10) + '...' + hash.substring(hash.length - 10);
   };
 
+  // Replacing colors.cardAccentSecondary with a Tailwind compatible color or CSS variable
+  // For now, let's use the primary color for accent, or remove if not desired.
+  // Using braidpoolPrimary defined in tailwind.config.js
+  const cardAccentColor = 'var(--braidpool-primary)'; // Example, assuming braidpoolPrimary is defined as HSL var or a direct hex value
+                                                // Or use a tailwind class like `border-braidpoolPrimary` on the Card itself.
+                                                // For the accentColor prop on our custom Card, it expects a string value for `backgroundColor`.
+                                                // Let's use a placeholder from our theme, e.g. the primary color.
+                                                // The `Card` component's accentColor prop takes a direct color string.
+                                                // We have braidpoolPrimary: '#3986e8' in tailwind.config.js
+                                                // So we can use that.
+                                                // Or, use the CSS variable for primary: "hsl(var(--primary))"
+  
   return (
     <Card
       title="Recent Blocks"
       subtitle="Latest blocks found by the pool"
-      accentColor={colors.cardAccentSecondary}
+      accentColor="hsl(var(--primary))" // Using the primary color from CSS vars
     >
-      <TableContainer
-        sx={{
-          maxHeight: maxHeight,
-          '&::-webkit-scrollbar': {
-            width: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: colors.paper,
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: colors.primary,
-            borderRadius: '4px',
-          },
-        }}
+      {/* Replaced TableContainer with a div for scrollability */}
+      <div
+        style={maxHeight ? { maxHeight: `${maxHeight}px` } : {}}
+        className="overflow-auto" // Standard Tailwind class for overflow
       >
-        <Table size="medium" stickyHeader>
-          <TableHead>
+        <ShadcnTable className="w-full">
+          <TableHeader>
             <TableRow>
-              <TableCell
-                sx={{
-                  backgroundColor: colors.paper,
-                  color: colors.textPrimary,
-                  fontWeight: 'bold',
-                }}
-              >
-                Height
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: colors.paper,
-                  color: colors.textPrimary,
-                  fontWeight: 'bold',
-                }}
-              >
-                Hash
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: colors.paper,
-                  color: colors.textPrimary,
-                  fontWeight: 'bold',
-                }}
-              >
-                Time
-              </TableCell>
+              {/* Replaced TableCell sx with TableHead component and Tailwind classes */}
+              <TableHead className="bg-card text-foreground font-bold sticky top-0">Height</TableHead>
+              <TableHead className="bg-card text-foreground font-bold sticky top-0">Hash</TableHead>
+              <TableHead className="bg-card text-foreground font-bold sticky top-0">Time</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {recentBlocks.map((block, index) => (
-              <TableRow
-                key={index}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  },
-                }}
-              >
-                <TableCell sx={{ color: colors.textPrimary }}>
-                  {block.height}
-                </TableCell>
-                <TableCell sx={{ color: colors.accent }}>
+              <TableRow key={index} className="hover:bg-muted/50">
+                {/* Replaced TableCell sx with Tailwind classes */}
+                <TableCell className="text-foreground">{block.height}</TableCell>
+                <TableCell className="text-primary font-mono text-xs"> {/* Using primary color for hash, and monospace small font */}
                   {truncateHash(block.hash)}
                 </TableCell>
-                <TableCell sx={{ color: colors.textSecondary }}>
-                  {block.time}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{block.time}</TableCell>
               </TableRow>
             ))}
           </TableBody>
-        </Table>
-      </TableContainer>
+        </ShadcnTable>
+      </div>
     </Card>
   );
 };

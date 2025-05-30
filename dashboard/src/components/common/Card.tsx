@@ -1,81 +1,68 @@
 import React, { ReactNode } from 'react';
-import { Box, Paper, Typography } from '@mui/material';
+import {
+  Card as ShadcnUICard, // Aliasing the import to avoid conflict with the component name
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '~/components/ui/card';
 
-interface CardProps {
+interface CardProps { // Keeping original interface name
   title?: ReactNode;
   subtitle?: ReactNode;
   children: ReactNode;
   accentColor?: string;
   headerExtra?: ReactNode;
+  className?: string;
 }
 
 /**
- * A reusable card component with a standard styling pattern
- * used throughout the dashboard
+ * A reusable card component migrated to shadcn/ui Card and Tailwind CSS.
+ * The component itself is named Card, matching its filename.
  */
 const Card: React.FC<CardProps> = ({
   title,
   subtitle,
   children,
-  accentColor = '#1976d2',
+  accentColor,
   headerExtra,
+  className = '',
 }) => {
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: 0,
-        borderRadius: 1,
-        border: '1px solid rgba(0,0,0,0.05)',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-        overflow: 'hidden',
-        height: '100%',
-        ...(accentColor && {
-          position: 'relative',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '4px',
-            height: '100%',
-            backgroundColor: accentColor,
-          },
-        }),
-      }}
-    >
-      {(title || subtitle || headerExtra) && (
-        <Box
-          sx={{
-            px: 2,
-            py: 1.5,
-            borderBottom: '1px solid rgba(0,0,0,0.05)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            bgcolor: 'rgba(0,0,0,0.01)',
-          }}
-        >
-          <Box>
-            {title && (
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 500, color: 'text.primary' }}
-              >
-                {title}
-              </Typography>
-            )}
-            {subtitle && (
-              <Typography variant="caption" color="text.secondary">
-                {subtitle}
-              </Typography>
-            )}
-          </Box>
-          {headerExtra && <Box>{headerExtra}</Box>}
-        </Box>
+    <div className={`relative h-full overflow-hidden ${className}`}>
+      {accentColor && (
+        <div
+          style={{ backgroundColor: accentColor }}
+          className="absolute top-0 left-0 h-full w-1 z-10" // w-1 is 4px. z-10 to be above card's potential bg
+        />
       )}
-      <Box sx={{ p: 0 }}>{children}</Box>
-    </Paper>
+      {/* Apply pl-2 to the card if accent is present, to visually shift content away from the accent line.
+          w-1 (4px) + pl-2 (8px) = 12px total indent for content from very edge.
+          The accent line is overlaid on top of the card's border/edge.
+      */}
+      <ShadcnUICard className={`h-full ${accentColor ? 'pl-2' : ''}`}>
+        {(title || subtitle || headerExtra) && (
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b px-6 py-4">
+            <div className="space-y-1">
+              {title && (
+                <CardTitle className="text-base font-semibold">
+                  {title}
+                </CardTitle>
+              )}
+              {subtitle && (
+                <CardDescription className="text-xs text-muted-foreground"> {/* Added text-muted-foreground as per typical CardDescription styling */}
+                  {subtitle}
+                </CardDescription>
+              )}
+            </div>
+            {headerExtra && <div>{headerExtra}</div>}
+          </CardHeader>
+        )}
+        <CardContent className="p-0">
+          {children}
+        </CardContent>
+      </ShadcnUICard>
+    </div>
   );
 };
 

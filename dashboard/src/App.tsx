@@ -1,70 +1,40 @@
 import React, { useState } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { Box, Container, Link, Typography, Button } from '@mui/material';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard/Dashboard';
+// ShareDetails import is kept as the component usage is still present (commented out)
 import ShareDetails from './components/ShareDetails/ShareDetails';
 import MinedSharesExplorer from './components/MinerDashboard/MinedSharesExplorer';
-
-// Create a dark theme
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#3986e8',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e',
-    },
-  },
-  components: {
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          paddingLeft: 16,
-          paddingRight: 16,
-          '@media (min-width: 600px)': {
-            paddingLeft: 24,
-            paddingRight: 24,
-          },
-        },
-      },
-    },
-  },
-});
+// import { Button } from "~/components/ui/button"; // Not needed as the MUI Button is commented out
 
 function Copyright() {
   return (
-    <Typography variant="body2" color="text.secondary" align="center">
+    <p className="text-sm text-muted-foreground text-center">
       {'© '}
-      <Link color="inherit" href="https://github.com/braidpool/braidpool">
+      <a href="https://github.com/braidpool/braidpool" className="hover:underline">
         Braidpool
-      </Link>{' '}
+      </a>{' '}
       {new Date().getFullYear()}
       {' - Built with Vite 🚀'}
-    </Typography>
+    </p>
   );
 }
 
 function App() {
-  const [shareDetailsOpen, setShareDetailsOpen] = useState(false);
+  // The state 'shareDetailsOpen' and 'setShareDetailsOpen' were related to the commented-out MUI Button.
+  // Since the button and its functionality are commented out, this state is not strictly necessary
+  // but keeping it doesn't harm if the intention is to re-enable it later.
+  // For a cleaner migration, if the button is indefinitely commented, this state could be removed.
+  // const [shareDetailsOpen, setShareDetailsOpen] = useState(false);
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Box sx={{ display: 'flex' }}>
-          {/* Test button for ShareDetails */}
-          {/* <Button
+    <BrowserRouter>
+      <div className="flex"> {/* Top-level Box replaced */}
+        {/* Test button for ShareDetails - MUI Button commented out */}
+        {/* <Button
             variant='contained'
             color='primary'
             onClick={() => setShareDetailsOpen(true)}
-            sx={{
+            sx={{ // sx prop would not work with shadcn button directly
               position: 'fixed',
               top: '20px',
               right: '20px',
@@ -73,50 +43,36 @@ function App() {
             Test Share Details
           </Button> */}
 
-          {/* ShareDetails component */}
-          {/* <ShareDetails
+        {/* ShareDetails component - usage commented out */}
+        {/* <ShareDetails
             open={shareDetailsOpen}
             onClose={() => setShareDetailsOpen(false)}
           /> */}
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: '100vh',
-              backgroundColor: '#121212',
-              width: '100%',
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route
-                path="/minedsharesexplorer"
-                element={<MinedSharesExplorer />}
-              />
-              {/* Add more routes as needed */}
-            </Routes>
-            <Box
-              component="footer"
-              sx={{
-                py: 3,
-                mt: 'auto',
-                bgcolor: 'background.paper',
-                borderTop: '1px solid rgba(255,255,255,0.05)',
-              }}
-            >
-              <Container maxWidth="lg">
-                <Typography variant="body1" align="center" gutterBottom>
-                  A visualization dashboard for the Braidpool decentralized
-                  mining pool
-                </Typography>
-                <Copyright />
-              </Container>
-            </Box>
-          </Box>
-        </Box>
-      </BrowserRouter>
-    </ThemeProvider>
+        {/* Primary content Box replaced with main and Tailwind classes */}
+        <main className="flex flex-col min-h-screen w-full bg-background text-foreground">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route
+              path="/minedsharesexplorer"
+              element={<MinedSharesExplorer />}
+            />
+            {/* Add more routes as needed */}
+          </Routes>
+          {/* Footer Box replaced with footer and Tailwind classes */}
+          <footer className="py-6 mt-auto bg-card border-t border-border">
+            {/* Container replaced with div and Tailwind container classes */}
+            <div className="container mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+              <p className="text-base text-center mb-2">
+                A visualization dashboard for the Braidpool decentralized
+                mining pool
+              </p>
+              <Copyright />
+            </div>
+          </footer>
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }
 

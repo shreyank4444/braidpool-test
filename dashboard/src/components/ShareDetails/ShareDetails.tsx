@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
+// Removed MUI imports
+
+// Shadcn/ui component imports
 import {
-  Dialog,
-  DialogTitle,
+  Dialog as ShadcnDialog,
   DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Box,
-  Tabs,
-  Tab,
-  Divider,
-  Chip,
-  Paper,
-  styled,
-  Stack,
-} from '@mui/material';
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogClose, // Although not explicitly used in footer, good for accessibility if needed
+} from '~/components/ui/dialog';
+import {
+  Tabs as ShadcnTabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '~/components/ui/tabs';
+import { Badge } from '~/components/ui/badge';
+import { Button as ShadcnButton } from '~/components/ui/button';
+
 import { BeadDisplayData } from '../../types/Bead';
 import { mockBeads } from '../../data/mockBeads';
 
@@ -27,55 +31,13 @@ interface ShareDetailsProps {
   onNavigateToBead?: (beadHash: string) => void;
 }
 
-// Styled components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  margin: theme.spacing(1, 0),
-  borderRadius: theme.shape.borderRadius,
-}));
-
-const HashText = styled(Typography)(({ theme }) => ({
-  fontFamily: 'monospace',
-  overflowWrap: 'break-word',
-}));
-
-const LabelText = styled(Typography)(({ theme }) => ({
-  fontWeight: 'bold',
-  color: theme.palette.text.secondary,
-}));
-
-const ValueText = styled(Typography)({
-  wordBreak: 'break-word',
-});
-
-// Tab panel component for tab content
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`bead-tabpanel-${index}`}
-      aria-labelledby={`bead-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+// Removed StyledPaper, HashText, LabelText, ValueText (will use Tailwind classes)
+// Removed TabPanel function
 
 /**
- * ShareDetails Component
+ * ShareDetails Component (Refactored with shadcn/ui and Tailwind CSS)
  *
  * Displays detailed information about a bead/share in the Braidpool network.
- * Can be triggered from various places in the dashboard.
  */
 export default function ShareDetails({
   beadHash,
@@ -84,23 +46,16 @@ export default function ShareDetails({
   onClose,
   onNavigateToBead,
 }: ShareDetailsProps) {
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState("block-header"); // Default tab value for shadcn/ui Tabs
 
-  // For demo purposes, if no bead is provided, use the tip bead from mock data
-  // In production, this would fetch the bead data from an API
   const bead =
     propBead ||
     (beadHash
       ? Object.values(mockBeads).find((b) => b.beadHash === beadHash) ||
-        mockBeads.tip
+      mockBeads.tip
       : mockBeads.tip);
 
-  // Handler for tab changes
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  // Handler for navigating to a parent bead
+  // Handler for navigating to a parent bead (no change in logic)
   const handleParentClick = (parentHash: string) => {
     if (onNavigateToBead) {
       onNavigateToBead(parentHash);
@@ -108,255 +63,135 @@ export default function ShareDetails({
     console.log('📣 Navigate to parent bead:', parentHash);
   };
 
+  // Helper for rendering key-value pairs
+  const InfoRow: React.FC<{ label: string; children: React.ReactNode; isHash?: boolean; fullWidth?: boolean }> = ({ label, children, isHash, fullWidth }) => (
+    <div className={`flex flex-col ${fullWidth ? 'w-full' : 'sm:w-1/2 w-full'} mb-3`}>
+      <span className="text-xs font-medium text-muted-foreground uppercase">{label}</span>
+      {isHash ? (
+        <span className="font-mono break-all text-sm text-foreground">{children}</span>
+      ) : (
+        <span className="text-sm break-words text-foreground">{children}</span>
+      )}
+    </div>
+  );
+  
+  const SectionTitle: React.FC<{children: React.ReactNode}> = ({children}) => (
+    <h3 className="text-lg font-semibold mt-4 mb-2 text-foreground">{children}</h3>
+  );
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      aria-labelledby="share-details-dialog-title"
-    >
-      <DialogTitle id="share-details-dialog-title">
-        Share Details
-        {bead.isTip && (
-          <Chip size="small" label="Tip" color="secondary" sx={{ ml: 1 }} />
-        )}
-        {bead.isGenesis && (
-          <Chip size="small" label="Genesis" color="primary" sx={{ ml: 1 }} />
-        )}
-      </DialogTitle>
+    <ShadcnDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto bg-card p-6 rounded-lg shadow-xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center text-xl text-foreground">
+            Share Details
+            {bead.isTip && (
+              <Badge variant="secondary" className="ml-2">Tip</Badge>
+            )}
+            {bead.isGenesis && (
+              <Badge variant="default" className="ml-2 bg-blue-600 hover:bg-blue-700">Genesis</Badge> // Using default variant with custom color for Genesis
+            )}
+          </DialogTitle>
+        </DialogHeader>
 
-      <DialogContent>
         {/* Bead Hash and Basic Info */}
-        <StyledPaper elevation={1}>
-          <Box sx={{ mb: 2 }}>
-            <LabelText variant="subtitle2">Bead Hash</LabelText>
-            <HashText variant="body2">{bead.beadHash}</HashText>
-          </Box>
+        <div className="p-3 bg-background border border-border rounded-md shadow-sm my-3 space-y-2">
+          <InfoRow label="Bead Hash" isHash fullWidth>{bead.beadHash}</InfoRow>
+          
+          <div className="flex flex-wrap -mx-2">
+            <div className="w-full sm:w-1/2 px-2"><InfoRow label="Observation Time">{bead.formattedTimestamp}</InfoRow></div>
+            <div className="w-full sm:w-1/2 px-2"><InfoRow label="Cohort">{bead.cohortId}</InfoRow></div>
+            <div className="w-full sm:w-1/2 px-2">
+              <span className="text-xs font-medium text-muted-foreground uppercase">Validation Status</span>
+              <div> {/* Wrapper div for badge to control layout if needed */}
+                <Badge variant={bead.validationStatus === 'valid' ? 'default' /* Using default for success */ : bead.validationStatus === 'invalid' ? 'destructive' : 'outline'}
+                       className={bead.validationStatus === 'valid' ? 'bg-green-600 hover:bg-green-700' : ''} // Custom success color
+                >
+                  {bead.validationStatus}
+                </Badge>
+              </div>
+            </div>
+            <div className="w-full sm:w-1/2 px-2"><InfoRow label="Lesser Difficulty Target">{bead.lesserDifficultyTarget.toString(16)}</InfoRow></div>
+          </div>
+        </div>
 
-          <Stack
-            spacing={2}
-            direction={{ xs: 'column', sm: 'row' }}
-            flexWrap="wrap"
-          >
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Observation Time</LabelText>
-              <ValueText variant="body2">{bead.formattedTimestamp}</ValueText>
-            </Box>
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Cohort</LabelText>
-              <ValueText variant="body2">{bead.cohortId}</ValueText>
-            </Box>
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Validation Status</LabelText>
-              <Chip
-                size="small"
-                label={bead.validationStatus}
-                color={
-                  bead.validationStatus === 'valid'
-                    ? 'success'
-                    : bead.validationStatus === 'invalid'
-                      ? 'error'
-                      : 'warning'
-                }
-              />
-            </Box>
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">
-                Lesser Difficulty Target
-              </LabelText>
-              <ValueText variant="body2">
-                {bead.lesserDifficultyTarget.toString(16)}
-              </ValueText>
-            </Box>
-          </Stack>
-        </StyledPaper>
+        <ShadcnTabs defaultValue="block-header" onValueChange={setTabValue} className="w-full mt-4">
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-md p-1">
+            <TabsTrigger value="block-header" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Block Header</TabsTrigger>
+            <TabsTrigger value="parents" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Parents</TabsTrigger>
+            <TabsTrigger value="transactions" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Transactions</TabsTrigger>
+          </TabsList>
 
-        {/* Tabs for different sections */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 2 }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            aria-label="bead details tabs"
-          >
-            <Tab
-              label="Block Header"
-              id="bead-tab-0"
-              aria-controls="bead-tabpanel-0"
-            />
-            <Tab
-              label="Parents"
-              id="bead-tab-1"
-              aria-controls="bead-tabpanel-1"
-            />
-            <Tab
-              label="Transactions"
-              id="bead-tab-2"
-              aria-controls="bead-tabpanel-2"
-            />
-          </Tabs>
-        </Box>
+          <TabsContent value="block-header" className="mt-3 p-3 bg-background border border-border rounded-md shadow-sm">
+            <div className="flex flex-wrap -mx-2">
+              <div className="w-full sm:w-1/2 px-2"><InfoRow label="Version">{bead.blockHeader.version}</InfoRow></div>
+              <div className="w-full sm:w-1/2 px-2"><InfoRow label="Timestamp">{new Date(bead.blockHeader.timestamp).toLocaleString()}</InfoRow></div>
+              <div className="w-full px-2"><InfoRow label="Previous Block Hash" isHash>{bead.blockHeader.prevBlockHash}</InfoRow></div>
+              <div className="w-full px-2"><InfoRow label="Merkle Root" isHash>{bead.blockHeader.merkleRoot}</InfoRow></div>
+              <div className="w-full sm:w-1/2 px-2"><InfoRow label="Bits">{bead.blockHeader.bits}</InfoRow></div>
+              <div className="w-full sm:w-1/2 px-2"><InfoRow label="Nonce">{bead.blockHeader.nonce}</InfoRow></div>
+            </div>
+          </TabsContent>
 
-        {/* Block Header Tab */}
-        <TabPanel value={tabValue} index={0}>
-          <Stack
-            spacing={2}
-            direction={{ xs: 'column', sm: 'row' }}
-            flexWrap="wrap"
-          >
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Version</LabelText>
-              <ValueText variant="body2">{bead.blockHeader.version}</ValueText>
-            </Box>
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Timestamp</LabelText>
-              <ValueText variant="body2">
-                {new Date(bead.blockHeader.timestamp).toLocaleString()}
-              </ValueText>
-            </Box>
-            <Box sx={{ flex: '1 1 100%' }}>
-              <LabelText variant="subtitle2">Previous Block Hash</LabelText>
-              <HashText variant="body2">
-                {bead.blockHeader.prevBlockHash}
-              </HashText>
-            </Box>
-            <Box sx={{ flex: '1 1 100%' }}>
-              <LabelText variant="subtitle2">Merkle Root</LabelText>
-              <HashText variant="body2">{bead.blockHeader.merkleRoot}</HashText>
-            </Box>
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Bits</LabelText>
-              <ValueText variant="body2">{bead.blockHeader.bits}</ValueText>
-            </Box>
-            <Box sx={{ flex: '1 1 50%', minWidth: { xs: '100%', sm: '45%' } }}>
-              <LabelText variant="subtitle2">Nonce</LabelText>
-              <ValueText variant="body2">{bead.blockHeader.nonce}</ValueText>
-            </Box>
-          </Stack>
-        </TabPanel>
+          <TabsContent value="parents" className="mt-3 p-3 bg-background border border-border rounded-md shadow-sm">
+            {bead.parents.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Genesis bead has no parents</p>
+            ) : (
+              bead.parents.map((parent, index) => (
+                <div key={index} className="p-3 bg-card border border-border rounded-md shadow-sm mb-3 last:mb-0 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <InfoRow label="Parent Hash" isHash fullWidth>{parent.beadHash}</InfoRow>
+                    <ShadcnButton variant="link" size="sm" onClick={() => handleParentClick(parent.beadHash)} className="p-0 h-auto text-primary hover:underline">View</ShadcnButton>
+                  </div>
+                  <InfoRow label="Timestamp" fullWidth>{new Date(parent.timestamp).toLocaleString()}</InfoRow>
+                </div>
+              ))
+            )}
+          </TabsContent>
 
-        {/* Parents Tab */}
-        <TabPanel value={tabValue} index={1}>
-          {bead.parents.length === 0 ? (
-            <Typography variant="body2">Genesis bead has no parents</Typography>
-          ) : (
-            bead.parents.map((parent, index) => (
-              <StyledPaper key={index} elevation={1}>
-                <Stack spacing={2}>
-                  <Box>
-                    <LabelText variant="subtitle2">Parent Hash</LabelText>
-                    <Box display="flex" alignItems="center">
-                      <HashText variant="body2">{parent.beadHash}</HashText>
-                      <Button
-                        size="small"
-                        onClick={() => handleParentClick(parent.beadHash)}
-                        sx={{ ml: 1 }}
-                      >
-                        View
-                      </Button>
-                    </Box>
-                  </Box>
-                  <Box>
-                    <LabelText variant="subtitle2">Timestamp</LabelText>
-                    <ValueText variant="body2">
-                      {new Date(parent.timestamp).toLocaleString()}
-                    </ValueText>
-                  </Box>
-                </Stack>
-              </StyledPaper>
-            ))
-          )}
-        </TabPanel>
+          <TabsContent value="transactions" className="mt-3 space-y-4">
+            <div>
+              <SectionTitle>Coinbase Transaction</SectionTitle>
+              <div className="p-3 bg-background border border-border rounded-md shadow-sm space-y-2">
+                <InfoRow label="Transaction ID" isHash fullWidth>{bead.coinbaseTransaction.transaction.txid}</InfoRow>
+                <div className="flex flex-wrap -mx-2">
+                  <div className="w-full sm:w-1/2 px-2"><InfoRow label="Version">{bead.coinbaseTransaction.transaction.version}</InfoRow></div>
+                  <div className="w-full sm:w-1/2 px-2"><InfoRow label="Lock Time">{bead.coinbaseTransaction.transaction.lockTime}</InfoRow></div>
+                </div>
+              </div>
+            </div>
 
-        {/* Transactions Tab */}
-        <TabPanel value={tabValue} index={2}>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6">Coinbase Transaction</Typography>
-            <StyledPaper elevation={1}>
-              <Stack spacing={2}>
-                <Box>
-                  <LabelText variant="subtitle2">Transaction ID</LabelText>
-                  <HashText variant="body2">
-                    {bead.coinbaseTransaction.transaction.txid}
-                  </HashText>
-                </Box>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Box sx={{ flex: '1 1 50%' }}>
-                    <LabelText variant="subtitle2">Version</LabelText>
-                    <ValueText variant="body2">
-                      {bead.coinbaseTransaction.transaction.version}
-                    </ValueText>
-                  </Box>
-                  <Box sx={{ flex: '1 1 50%' }}>
-                    <LabelText variant="subtitle2">Lock Time</LabelText>
-                    <ValueText variant="body2">
-                      {bead.coinbaseTransaction.transaction.lockTime}
-                    </ValueText>
-                  </Box>
-                </Stack>
-              </Stack>
-            </StyledPaper>
-          </Box>
+            <div>
+              <SectionTitle>Payout Update Transaction</SectionTitle>
+              <div className="p-3 bg-background border border-border rounded-md shadow-sm space-y-2">
+                <InfoRow label="Transaction ID" isHash fullWidth>{bead.payoutUpdateTransaction.transaction.txid}</InfoRow>
+                <div className="flex flex-wrap -mx-2">
+                  <div className="w-full sm:w-1/2 px-2"><InfoRow label="Version">{bead.payoutUpdateTransaction.transaction.version}</InfoRow></div>
+                  <div className="w-full sm:w-1/2 px-2"><InfoRow label="Lock Time">{bead.payoutUpdateTransaction.transaction.lockTime}</InfoRow></div>
+                </div>
+              </div>
+            </div>
 
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6">Payout Update Transaction</Typography>
-            <StyledPaper elevation={1}>
-              <Stack spacing={2}>
-                <Box>
-                  <LabelText variant="subtitle2">Transaction ID</LabelText>
-                  <HashText variant="body2">
-                    {bead.payoutUpdateTransaction.transaction.txid}
-                  </HashText>
-                </Box>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Box sx={{ flex: '1 1 50%' }}>
-                    <LabelText variant="subtitle2">Version</LabelText>
-                    <ValueText variant="body2">
-                      {bead.payoutUpdateTransaction.transaction.version}
-                    </ValueText>
-                  </Box>
-                  <Box sx={{ flex: '1 1 50%' }}>
-                    <LabelText variant="subtitle2">Lock Time</LabelText>
-                    <ValueText variant="body2">
-                      {bead.payoutUpdateTransaction.transaction.lockTime}
-                    </ValueText>
-                  </Box>
-                </Stack>
-              </Stack>
-            </StyledPaper>
-          </Box>
+            <div>
+              <SectionTitle>Other Transactions ({bead.transactions.length})</SectionTitle>
+              {bead.transactions.map((tx, index) => (
+                <div key={index} className="p-3 bg-background border border-border rounded-md shadow-sm mb-3 last:mb-0 space-y-2">
+                  <InfoRow label="Transaction ID" isHash fullWidth>{tx.txid}</InfoRow>
+                  <div className="flex flex-wrap -mx-2">
+                    <div className="w-full sm:w-1/2 px-2"><InfoRow label="Size">{tx.size} bytes</InfoRow></div>
+                    <div className="w-full sm:w-1/2 px-2"><InfoRow label="Weight">{tx.weight}</InfoRow></div>
+                  </div>
+                </div>
+              ))}
+              {bead.transactions.length === 0 && <p className="text-sm text-muted-foreground p-3 bg-background border border-border rounded-md shadow-sm">No other transactions.</p>}
+            </div>
+          </TabsContent>
+        </ShadcnTabs>
 
-          <Box>
-            <Typography variant="h6">
-              Other Transactions ({bead.transactions.length})
-            </Typography>
-            {bead.transactions.map((tx, index) => (
-              <StyledPaper key={index} elevation={1}>
-                <Stack spacing={2}>
-                  <Box>
-                    <LabelText variant="subtitle2">Transaction ID</LabelText>
-                    <HashText variant="body2">{tx.txid}</HashText>
-                  </Box>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <Box sx={{ flex: '1 1 50%' }}>
-                      <LabelText variant="subtitle2">Size</LabelText>
-                      <ValueText variant="body2">{tx.size} bytes</ValueText>
-                    </Box>
-                    <Box sx={{ flex: '1 1 50%' }}>
-                      <LabelText variant="subtitle2">Weight</LabelText>
-                      <ValueText variant="body2">{tx.weight}</ValueText>
-                    </Box>
-                  </Stack>
-                </Stack>
-              </StyledPaper>
-            ))}
-          </Box>
-        </TabPanel>
+        <DialogFooter className="mt-6 pt-4 border-t border-border">
+          <ShadcnButton variant="outline" onClick={onClose}>Close</ShadcnButton>
+        </DialogFooter>
       </DialogContent>
-
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
-    </Dialog>
+    </ShadcnDialog>
   );
 }

@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%; /* Default Slate primary for light mode */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%; /* Default Slate secondary for light mode */
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%; /* Default Slate accent for light mode */
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%; /* Default destructive for light mode */
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%; /* Default Slate ring for light mode */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 3.7% 11%; /* slate 900 */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 3.7% 11%; /* slate 900 */
+    --popover-foreground: 0 0% 98%;
+    --primary: 217 91% 60%; /* #3986e8 */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%; /* slate 800 */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%; /* slate 800 */
+    --muted-foreground: 240 5% 64.9%; /* slate 400 */
+    --accent: 45 93% 52%; /* #ffc107 */
+    --accent-foreground: 240 10% 3.9%; /* dark text for yellow accent */
+    --destructive: 3 90% 59%; /* #f44336 */
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%; /* slate 800 */
+    --input: 240 3.7% 15.9%; /* slate 800 */
+    --ring: 217 91% 60%; /* primary for focus rings - #3986e8 */
+    /* --radius should be inherited from :root */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

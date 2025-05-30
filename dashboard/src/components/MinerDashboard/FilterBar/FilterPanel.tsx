@@ -1,13 +1,32 @@
+import React, { useState } from 'react'; // Added React import for useState
 import { motion } from 'framer-motion';
 import { BEADS } from '../lib/constants';
-import { ChevronDown, Calendar, Search } from 'lucide-react';
+// Removed ChevronDown as shadcn/ui Select has its own. Calendar will be replaced by CalendarDays.
+import { CalendarDays, Search } from 'lucide-react';
+
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '~/components/ui/select';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '~/components/ui/popover';
+import { Calendar as ShadcnCalendar } from '~/components/ui/calendar';
+import { Button } from '~/components/ui/button';
 
 interface FilterPanelProps {
-  startRef: React.RefObject<HTMLInputElement>;
-  endRef: React.RefObject<HTMLInputElement>;
+  // startRef and endRef removed as they are no longer needed for shadcn/ui Calendar
 }
 
-export default function FilterPanel({ startRef, endRef }: FilterPanelProps) {
+export default function FilterPanel({}: FilterPanelProps) { // Props are now empty
+  const [startDate, setStartDate] = useState<Date | undefined>(new Date("2024-07-31"));
+  const [endDate, setEndDate] = useState<Date | undefined>(new Date("2024-07-31"));
+
   return (
     <motion.div
       initial={{ height: 0, opacity: 0 }}
@@ -19,78 +38,79 @@ export default function FilterPanel({ startRef, endRef }: FilterPanelProps) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5 pt-4">
         {/* Miner Select */}
         <div>
-          <label className="block mb-2 text-blue-300 font-medium">Miner</label>
-          <div className="relative group">
-            <select className="w-full bg-gray-900/80 border border-gray-700/80 rounded-lg p-2.5 pr-8 appearance-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 group-hover:border-blue-400/70">
-              <option>(All)</option>
+          <label className="block mb-1 text-sm font-medium text-muted-foreground">Miner</label>
+          <Select defaultValue="(All)">
+            <SelectTrigger className="w-full bg-background border-border hover:border-ring">
+              <SelectValue placeholder="Select a miner" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="(All)">(All)</SelectItem>
               {BEADS.map((bead) => (
-                <option key={bead.id} value={bead.id}>
+                <SelectItem key={bead.id} value={bead.id}>
                   {bead.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-              <motion.div
-                animate={{ y: [0, 2, 0] }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Number.POSITIVE_INFINITY,
-                  repeatType: 'reverse',
-                }}
-              >
-                <ChevronDown className="h-4 w-4 text-blue-400" />
-              </motion.div>
-            </div>
-          </div>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Start Date */}
         <div>
-          <label className="block mb-2 text-blue-300 font-medium">
+          <label className="block mb-1 text-sm font-medium text-muted-foreground">
             Start Date
           </label>
-          <div className="relative group">
-            <input
-              ref={startRef}
-              type="date"
-              defaultValue="2024-07-31"
-              className="w-full bg-gray-900/80 border border-gray-700/80 rounded-lg p-2.5 pr-10 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 group-hover:border-blue-400/70
-                [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-            />
-            <button
-              type="button"
-              onClick={() => startRef.current?.showPicker()}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-            >
-              <Calendar className="h-5 w-5 text-blue-400 " />
-            </button>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={`w-full justify-start text-left font-normal bg-background border-border hover:border-ring hover:bg-muted/50 ${
+                  !startDate && "text-muted-foreground"
+                }`}
+              >
+                <CalendarDays className="mr-2 h-4 w-4" />
+                {startDate ? new Date(startDate).toLocaleDateString() : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <ShadcnCalendar
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* End Date */}
         <div>
-          <label className="block mb-2 text-blue-300 font-medium">
+          <label className="block mb-1 text-sm font-medium text-muted-foreground">
             End Date
           </label>
-          <div className="relative group">
-            <input
-              ref={endRef}
-              type="date"
-              defaultValue="2024-07-31"
-              className="w-full bg-gray-900/80 border border-gray-700/80 rounded-lg p-2.5 pr-10 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 group-hover:border-blue-400/70
-                [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-            />
-            <button
-              type="button"
-              onClick={() => endRef.current?.showPicker()}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-            >
-              <Calendar className="h-5 w-5 text-blue-400" />
-            </button>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={`w-full justify-start text-left font-normal bg-background border-border hover:border-ring hover:bg-muted/50 ${
+                  !endDate && "text-muted-foreground"
+                }`}
+              >
+                <CalendarDays className="mr-2 h-4 w-4" />
+                {endDate ? new Date(endDate).toLocaleDateString() : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <ShadcnCalendar
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
-        {/* Search */}
+        {/* Search (remains unchanged as per instructions) */}
         <div>
           <label className="block mb-2 text-blue-300 font-medium">Search</label>
           <div className="relative group">
